@@ -50,27 +50,30 @@ const level_upCard = (async(req, res)=>{
 const handleUpdateDailyReports = (()=>{
   let query = `SELECT * FROM daily_reports`;
   connection.query(query, async function(error, data){
-    let yesterdy = data[data.length - 1].date
-    let before = new Date(yesterdy).getDate()
-    let now = new Date().getDate()
-    if( before !== now){
-      let newStore = {
-        DAU:0,
-        newly_registered:0,
-        total_new_deposit:0,
-        total_new_deposit_amount:0,
-        total_re_deposit_amount:0,
-        total_withdraw_amount:0,
-        total_withdraw: 0,
-        date: new Date()
+    if(data.length !== 0){
+      let yesterdy = data[data.length - 1].date
+      let before = new Date(yesterdy).getDate()
+      let now = new Date().getDate()
+      if( before !== now){
+        let newStore = {
+          DAU:0,
+          newly_registered:0,
+          total_new_deposit:0,
+          total_new_deposit_amount:0,
+          total_re_deposit_amount:0,
+          total_withdraw_amount:0,
+          total_withdraw: 0,
+          date: new Date()
+        }
+        let sql = `INSERT INTO daily_reports SET ?`;
+        connection.query(sql, newStore, (err, data)=>{
+            if(err){
+                console.log(err)
+            }
+          })
       }
-      let sql = `INSERT INTO daily_reports SET ?`;
-      connection.query(sql, newStore, (err, data)=>{
-          if(err){
-              console.log(err)
-          }
-        })
     }
+   
   })
 })
 setInterval(()=> handleUpdateDailyReports() ,1000)

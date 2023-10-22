@@ -71,6 +71,10 @@ app.use("/admin/all-players", AllPLays);
 app.use("/admin/verify", VerifyGames);
 app.use("/admin/stat", AdminStat);
 
+app.get("/", (req, res)=>{
+  res.send("Welcome to Wager server")
+})
+
 const PORT = process.env.PORT || 8080
 server.listen(PORT, () => {
   console.log("listening to port", PORT);
@@ -81,5 +85,3 @@ app.all("*", (req,res)=>{
     message:"Just like that you completely lost your way 😂"
   })
 })
-
-// https://www.linkpicture.com/q/dpp-favicon-allwhite-transparent-final.png
