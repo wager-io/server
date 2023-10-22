@@ -1,0 +1,4 @@
+let _query = `INSERT INTO consumed (crash_consumed) VALUES (?)`;
+connection.query(_query, [1], function(err, response) {
+  console.log(err, response);
+});
