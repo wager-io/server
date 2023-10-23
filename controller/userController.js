@@ -301,8 +301,8 @@ const userAffiliateCodes = (async(req, res)=>{
 const SingleUserByID = (async(req, res)=>{
     const {id} = req.params;
     try{
-        const users =   await Profile.find({user_id:id})
-        console.log(users)
+        const users =  await Profile.find({user_id:id})
+        res.status(200).json(users)
     }
     catch(error){
         res.status(500).json({error})
