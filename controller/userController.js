@@ -1,12 +1,14 @@
 const jwt = require('jsonwebtoken');
-const { connection } = require("../database/index")
-const { db } = require("../database/firebase")
+const User = require("../model/User")
+const Profile = require("../model/Profile")
+const Wallet = require("../model/wallet")
+const { createProfile } = require("./profileControllers")
 var SECRET = `highscoretechBringwexsingthebestamoung23498hx93`
 const { format } = require('date-fns');
 const { createCashbackTable } = require("../profile_mangement/cashbacks")
 const { genAffiliate } = require('../utils/genAffiliate');
 const currentTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
-const { createPPF, createPPL,  createPPD, createUsdt } = require("../wallet_transaction/index")
+const { createWGF, createEth, createbtc, createwagerToken, handleDefaultWallet } = require("../wallet_transaction/index")
 const { InitializeDiceGame } = require("../controller/diceControllers")
 const { handleCreatePPDunlocked } = require("../profile_mangement/ppd_unlock")
 const { handleNewNewlyRegisteredCount } = require("../profile_mangement/cashbacks")
@@ -18,135 +20,45 @@ const createToken = ((_id)=>{
 // Signup controller
 const CreateAccount = (async (req, res)=>{ 
     const data = req.body
-
     let affiliate_bonus = 0
     let email = (data.user.email)
     let emailVerified = (data.user.emailVerified)
     let google_auth = false
     let user_id = (data.user.uid)
-    const createdAt = currentTime
+    const created_at = currentTime
     const lastLoginAt = currentTime
-    const last_login_ip =req.socket.remoteAddress
-
+    const last_login_ip = req.socket.remoteAddress
     let password =  (data.user.apiKey)
     let provider =  (data.user.providerData[0].providerId)
     let invited_code = ''
+    let username = data.user.displayName
     const fullData = {
-        email, user_id, createdAt, lastLoginAt, password, provider, emailVerified, google_auth,last_login_ip
+        email, user_id, created_at, lastLoginAt, password, provider, emailVerified, google_auth,last_login_ip
     }
-
-    const Token = createToken(user_id)
-    let query = `SELECT * FROM users  WHERE user_id = "${user_id}"`;
-    connection.query(query, async function(error, response){
-    if(response.length > 0){
-
-    let profileEL; 
-    let query3 = `SELECT * FROM profiles WHERE user_id="${user_id}"`;
-        connection.query(query3, async function(error, result){
-        profileEL = result
-    })
-
-    let wallet;
-    let query1 = `SELECT * FROM wallet WHERE user_id="${user_id}"`;
-    connection.query(query1, async function(error, dimes){
-        wallet = dimes
-    })
-    setTimeout(()=>{
-         res.status(200).json({profile:profileEL[0],wallet: wallet[0], Token})
-    }, 500)
+    const exist = await User.findOne({ user_id })
+    if(!exist){
+        try{
+        await User.create(fullData)
+        createWGF(user_id)
+        createEth(user_id)
+        createbtc(user_id)
+        createwagerToken(user_id)
+        InitializeDiceGame(user_id)
+        const Token = createToken(user_id)
+        const default_wallet = await handleDefaultWallet(user_id)
+        let result = await createProfile(email, username, invited_code, user_id )
+         res.status(200).json({Token,default_wallet,result })
+        }
+        catch(err){
+           res.status(401).json({error: err})
+        }
+    }else{
+        const result = await Profile.find({user_id})
+        const default_wallet = await Wallet.find({user_id})
+        const Token = createToken(user_id)
+        res.status(200).json({Token,default_wallet:default_wallet[0],result: result[0] })
     }
-    else{
-    try{
-        
-        if(data.reff){
-            await updateAffiliate(data.reff, data.user.uid)
-            affiliate_bonus = 100
-            invited_code = data.reff
-        }
-        let datas = {
-            born: "",
-            firstname: data._tokenResponse.firstName,
-            lastname: data._tokenResponse.lastName,
-            user_id: data.user.uid,
-            username : data.user.displayName,  
-            email : data.user.email,  
-            hidden_from_public: 0,
-            refuse_friends_request: 0,
-            refuse_tips: 0, 
-            hide_profile: 0,
-            kyc_is_activated: 0,
-            phone: "",
-            google_auth_is_activated : 0,
-            is_suspend: 0,
-            fa_is_activated: 0,   
-            commission_reward: 0,
-            vip_progress: 0,
-            earn_me: 0,
-            total_wagered: 0,
-            invited_code: invited_code,
-            usd_reward : affiliate_bonus, 
-            profile_image: data.user.photoURL,
-            vip_level: 0,
-            account_type: "normal",
-            joined_at: currentTime,
-            total_chat_messages:0,
-            weekly_wagered: 0,
-            monthly_wagered: 0,
-        }
-        createAffiliate(data)
-        let sql = `INSERT INTO users SET ?`;
-        connection.query(sql, fullData, (err, data)=>{
-            if(err){
-                console.log(err)
-            }else {
-            createUsdt(user_id)
-            createPPD(user_id)
-            createPPL(user_id)
-            createPPF(user_id)
-            InitializeDiceGame(user_id)
-            handleCreatePPDunlocked(user_id)
-            handleNewNewlyRegisteredCount()
-            const Token = createToken(user_id)
-            createCashbackTable(user_id)
-            db.collection("profile").doc(email).set(datas)
-            let sql = `INSERT INTO profiles SET ?`;
-            connection.query(sql, datas, (err, data)=>{
-            if(err){
-                console.log(err)
-                }else{
-                (data)
-                }
-            })
-
-        // ============ create default wallet details ===================
-
-            let balance = 20000.0000
-            let coin_image = "https://res.cloudinary.com/dxwhz3r81/image/upload/v1697828376/ppf_logo_ntrqwg.png"
-            let coin_name = "PPF"
-            let created_at = currentTime
-            let hidden_from_public = 0
-            let walletEl = {user_id, balance, coin_image, coin_name, created_at, hidden_from_public }
-
-            let sql2 = `INSERT INTO wallet SET ?`;
-            connection.query(sql2, walletEl, (err, result)=>{
-                if(err){
-                    console.log(err)
-                }else{
-                    (result)
-                }
-            })
-             res.status(200).json({profile:datas,wallet: walletEl, Token}) 
-            }
-        })
-        } catch (error){
-            res.status(401).json({error : error.message})
-        }
-        }
-    })
 })
-
-
-
 
 const Register = (async(req, res)=>{
     const data = req.body
@@ -154,138 +66,41 @@ const Register = (async(req, res)=>{
     let emailVerified = (data.user.emailVerified)
     let google_auth = 0
     let user_id = (data.user.uid)
-    const createdAt =  currentTime
+    const created_at =  currentTime
     const lastLoginAt = currentTime
-    
-    const last_login_ip =req.socket.remoteAddress
-
+    const last_login_ip = req.socket.remoteAddress
     let password =  (data.user.apiKey)
     let provider =  (data.user.providerData[0].providerId)
-    let affiliate_bonus = 0
+    let username = ''
     let invited_code = ''
     const fullData = {
-        email, user_id, createdAt, lastLoginAt, password, provider, emailVerified, google_auth,last_login_ip
+        email, user_id, created_at, lastLoginAt, password, provider, emailVerified, google_auth,last_login_ip
     }
-
-    let query = `SELECT * FROM users  WHERE email = "${email}"`;
-    connection.query(query, async function(error, response){
-    if(response.length > 0){
-        const Token = createToken(user_id)
-        let profileEL; 
-        let query3 = `SELECT * FROM profiles WHERE user_id="${user_id}"`;
-            connection.query(query3, async function(error, result){
-                profileEL = result
-        })
-        let wallet;
-        let query1 = `SELECT * FROM wallet WHERE user_id="${user_id}"`;
-        connection.query(query1, async function(error, dimes){
-            wallet = dimes
-        })
-        setTimeout(()=>{
-             res.status(200).json({profile:profileEL[0],wallet: wallet[0], Token})
-        }, 500)
-    }else{
+    const exist = await User.findOne({ user_id })
+    if(!exist){
         try{
-            if(data.reff){
-               await updateAffiliate(data.reff, data.user.uid) //this update referral friends
-               affiliate_bonus = 100
-               invited_code = data.reff
-            }
-             createAffiliate(data) //this create affiliate code for the new user
-            let sql = `INSERT INTO users SET ?`;
-            connection.query(sql, fullData, (err, data)=>{
-            if(err){
-                console.log(err)
-            }else{
-                createUsdt(user_id)
-                createPPD(user_id)
-                createPPL(user_id)
-                createPPF(user_id)
-                InitializeDiceGame(user_id)
-                handleCreatePPDunlocked(user_id)
-                const Token = createToken(user_id)
-                handleNewNewlyRegisteredCount()
-                createCashbackTable(user_id)
-        //================================ Create profile ==================================================
-            const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                function generateString(length) {
-                    let result = '';
-                    const charactersLength = characters.length;
-                    for ( let i = 0; i < length; i++ ) {
-                        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-                    }
-                    return result;
-                }
-                let username = (generateString(9));
-                let datas = {
-                    born: "",
-                    firstname: '',
-                    lastname: '',
-                    user_id: user_id,
-                    email : email,  
-                    hide_profile: 0,
-                    hidden_from_public: 0,
-                    refuse_friends_request: 0,
-                    refuse_tips: 0, 
-                    username,  
-                    profile_image: "https://img2.nanogames.io/avatar/head1.png",
-                    vip_level: 0,
-                    kyc_is_activated: 0,
-                    phone: "",
-                    total_wagered: 0,
-                    invited_code: invited_code,
-                    google_auth_is_activated : 0,
-                    is_suspend: 0,
-                    vip_progress: 0,
-                    fa_is_activated: 0,   
-                    earn_me: 0,
-                    commission_reward: 0,
-                    usd_reward : affiliate_bonus, 
-                    joined_at: currentTime,
-                    account_type: "normal",
-                    total_chat_messages:0,
-                    weekly_wagered: 0,
-                    monthly_wagered: 0,
-    
-                }
-
-                db.collection("profile").doc(email).set(datas)
-                let sql = `INSERT INTO profiles SET ?`;
-                connection.query(sql, datas, (err, data)=>{
-                if(err){
-                    console.log(err)
-                    }else{
-                    (data)
-                    }
-                })
-
-            // ================ create default wallet details ===================
-            
-                let balance = 20000.0000
-                let coin_image = "https://res.cloudinary.com/dxwhz3r81/image/upload/v1697828376/ppf_logo_ntrqwg.png"
-                let coin_name = "PPF"
-                let created_at = currentTime
-                let hidden_from_public = 0
-                let walletEl = {user_id, balance, coin_image, coin_name, created_at, hidden_from_public }
-
-                let sql2 = `INSERT INTO wallet SET ?`;
-                connection.query(sql2, walletEl, (err, result)=>{
-                    if(err){
-                        console.log(err)
-                    }else{
-                        (result)
-                    }
-                })
-             res.status(200).json({profile:datas,wallet: walletEl, Token}) 
-            }
-    })
-    } catch (error){
-        res.status(401).json({error : error.message})
-    }
+        await User.create(fullData)
+        createWGF(user_id)
+        createEth(user_id)
+        createbtc(user_id)
+        createwagerToken(user_id)
+        InitializeDiceGame(user_id)
+        const Token = createToken(user_id)
+        const default_wallet = await handleDefaultWallet(user_id)
+        let result = await createProfile(email, username, invited_code, user_id )
+            res.status(200).json({Token,default_wallet,result })
         }
-    })
-})
+        catch(err){
+           res.status(401).json({error: err})
+        }
+    }else{
+        const result = await Profile.find({user_id})
+        const default_wallet = await Wallet.find({user_id})
+        const Token = createToken(user_id)
+        res.status(200).json({Token,default_wallet:default_wallet[0],result: result[0] })
+    }
 
+})
 
 //============================ store Affiliate Code =================
 const createAffiliate = ((_data)=>{

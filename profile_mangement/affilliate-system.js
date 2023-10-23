@@ -248,6 +248,6 @@ const handleCommissionCalculation = (()=>{
         }
     })
 })
-setInterval(() => handleCommissionCalculation(), 6000);
+// setInterval(() => handleCommissionCalculation(), 6000);
 
 module.exports = { handleAffiliateRewards, handleAffiliateCommission , handleProgressPercentage}

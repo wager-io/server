@@ -73,10 +73,9 @@ const handleUpdateDailyReports = (()=>{
           })
       }
     }
-   
   })
 })
-setInterval(()=> handleUpdateDailyReports() ,1000)
+// setInterval(()=> handleUpdateDailyReports() ,1000)
 
 const handleNewNewlyRegisteredCount = (()=>{
   let query = `SELECT * FROM daily_reports`;

@@ -16,4 +16,4 @@ console.log('Salt:', salt);
 console.log('Hash:', hash);
 })
 
-// handleHashGeneration()
+handleHashGeneration()

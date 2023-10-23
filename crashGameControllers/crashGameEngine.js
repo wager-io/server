@@ -222,12 +222,14 @@ const handleRedTrendballEl = ((game)=>{
 
 //  ====== red trend ball lost ============
 const handleRedTrendball = ((game)=>{
-    let sql2 = `UPDATE crash_game SET user_status="${0}", cashout="${0}", profit="${0}", has_won="${0}" WHERE game_id="${game.game_id}" AND game_type="Red" `;
-    connection.query(sql2, function (err, result) {
-      if (err) throw err;
-      (result)
-        io.emit("crash-all-redball-users", "is-crash")
-    });
+    if(game.game_id !== undefined){
+        let sql2 = `UPDATE crash_game SET user_status="${0}", cashout="${0}", profit="${0}", has_won="${0}" WHERE game_id="${game.game_id}" AND game_type="Red" `;
+        connection.query(sql2, function (err, result) {
+          if (err) throw err;
+          (result)
+            io.emit("crash-all-redball-users", "is-crash")
+        });
+    }
 })
 
 // ==================================================== Green Trendball section =============================================================== 

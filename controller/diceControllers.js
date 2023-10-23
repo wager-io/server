@@ -1,7 +1,7 @@
 const { connection } = require("../database/index")
 const crypto = require('crypto');
 const { handleWagerIncrease, handleProfileTransactions } = require("../profile_mangement/index")
-
+const DiceEncription = require("../model/dice_encryped_seeds")
 let nonce = 0
 let maxRange = 100
 const { format } = require('date-fns');
@@ -239,7 +239,7 @@ const getDiceGameHistory = (async (req, res)=>{
 
 
 // ============================== Initialize dice game ===============================
-const InitializeDiceGame = ((user_id)=>{
+const InitializeDiceGame = (async(user_id)=>{
 
   const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   function generateString(length) {
@@ -254,32 +254,20 @@ const InitializeDiceGame = ((user_id)=>{
   const salt = 'Qede00000000000w00wd001bw4dc6a1e86083f95500b096231436e9b25cbdd0075c4';
   
   const handleHashGeneration = (()=>{
-  // Generate a random server seed 
       const serverSeed = crypto.randomBytes(32).toString('hex');
-      // The client provides their own seed
       const clientSeed = generateString(23);
-      // Combine the server seed and client seed with a salt
       const combinedSeed = serverSeed + salt + clientSeed;
-      // Create a hash of the combined seed using SHA-256 (or a different hash function if preferred)
       const hash = crypto.createHash('sha256').update(combinedSeed).digest('hex');
       let encrypt = { hash, clientSeed }
       return encrypt
   })
-  
-      let data = {
-          user_id: user_id,
-          server_seed: handleHashGeneration().hash,
-          client_seed: handleHashGeneration().clientSeed,
-          updated_at: currentTime
-      }
-      let sql = `INSERT INTO dice_encryped_seeds SET ?`;
-      connection.query(sql, data, (err, result)=>{
-          if(err){
-              console.log(err)
-          }else{
-              (result)
-          }
-      })
+    let data = {
+        user_id: user_id,
+        server_seed: handleHashGeneration().hash,
+        client_seed: handleHashGeneration().clientSeed,
+        updated_at: currentTime
+    }
+     await DiceEncription.create(data)
   })
   
 

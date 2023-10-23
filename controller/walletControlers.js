@@ -1,4 +1,8 @@
-const { connection } = require("../database/index")
+const Wallet = require("../model/wallet")
+const BTCWallet = require("../model/btc-wallet")
+const EThHWallet = require("../model/eth-wallet")
+const WGFWallet = require("../model/wgf-wallet")
+const WGDWallet = require("../model/wgd-wallet")
 
 // ============= get wallet  ====================
 const GetPPDWallet = ((req, res)=>{
@@ -82,16 +86,14 @@ const GetUSDTWallet = ((req, res)=>{
     }
 })
 
-const GetDefaultWallet = ((req, res)=>{
-  const user_id = req.id;
+const GetDefaultWallet = (async(req, res)=>{
+  const {user_id} = req.id;
   if (!user_id) {
     res.status(500).json({ error: "No user found" });
   } else {
     try {
-      let query = `SELECT * FROM  wallet  WHERE user_id = "${user_id}"`;
-      connection.query(query, async function(error, data){
-        res.status(200).json(data)
-      })
+      const users =   await Wallet.find({user_id})
+      res.status(200).json(users)
     } catch (err) {
       res.status(501).json({ message: err.message });
     }

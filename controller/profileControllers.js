@@ -1,29 +1,76 @@
 const { connection } = require("../database/index")
-var admin = require("firebase-admin");
-const db = admin.firestore()
+const Profile = require("../model/Profile")
 const { handleProfileTransactions } = require("../profile_mangement/index")
 const { format } = require('date-fns');
 const currentTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 
+const createProfile = (async(email,username, invited_code, user_id )=>{
+  const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  function generateString(length) {
+      let result = '';
+      const charactersLength = characters.length;
+      for ( let i = 0; i < length; i++ ) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      }
+      return result;
+  }
+
+  let datas = {
+    born: "-",
+    firstname: '-',
+    lastname: '-',
+    user_id: user_id,
+    email : email,  
+    hide_profile: false,
+    hidden_from_public: false,
+    refuse_friends_request: false,
+    refuse_tips: false, 
+    username : username ? username : generateString(9).toString(),  
+    profile_image: "https://img2.nanogames.io/avatar/head1.png",
+    vip_level: 0,
+    kyc_is_activated: false,
+    phone: "-",
+    total_wagered: 0,
+    invited_code: invited_code ? invited_code : "-",
+    google_auth_is_activated : false,
+    is_suspend: false,
+    vip_progress: 0,
+    fa_is_activated: false,   
+    earn_me: 0,
+    commission_reward: 0,
+    usd_reward : 0, 
+    joined_at: currentTime,
+    account_type: "normal",
+    total_chat_messages:0,
+    weekly_wagered: 0,
+    monthly_wagered: 0
+}
+
+  try{
+    const profile = await Profile.create(datas)
+    return profile
+  }
+  catch(err){
+    console.log(err)
+  }
+})
 
 const UpdateProfile = (async(req, res)=>{
-  const user_id = req.id;
+  const {user_id} = req.id;
   const {data} = req.body
 
   if (!user_id) {
     res.status(500).json({ error: "No user found" });
   } else{
-    db.collection("profile").doc(data.email).update({
-      firstname: data.firstname, lastname: data.lastname, born: data.born
-    }).then(function() {
-      ("user is updated");
-    });
     try{
-      let sql = `UPDATE profiles SET born="${data.born}", firstname="${data.firstname}", lastname="${data.lastname}"  WHERE user_id="${user_id}"`;
-      connection.query(sql, function (err, result) {
-        if (err) throw err;
-        res.status(200).json(result)
-      });
+      Profile.updateOne({user_id},{born: data.born, firstname: data.firstname, lastname:data.lastname }, ((err,result)=>{
+        if (err) {
+          console.log(err)
+        } else {
+          console.log(result)
+          res.status(200).json(result);
+        }
+     }));
     }
     catch(error){
       res.status(501).json({ message: error });
@@ -32,9 +79,8 @@ const UpdateProfile = (async(req, res)=>{
 })
 
 
-
 const UpdateUser = (async(req, res)=>{
-    const user_id = req.id;
+    const {user_id} = req.id;
     const {data} = req.body
 
     if (!user_id) {
@@ -42,17 +88,14 @@ const UpdateUser = (async(req, res)=>{
     } 
     else{
       try{
-        db.collection("profile").doc(data.email).update({
-          username: data.username, 
-          profile_image: data.profile_image
-        }).then(function() {
-          ("user is updated");
-        });
-        let sql = `UPDATE profiles SET username="${data.username}", profile_image="${data.profile_image}"  WHERE user_id = "${user_id}"`;
-        connection.query(sql, function (err, result) {
-          if (err) throw err;
-         res.status(200).json(result)
-        });
+        Profile.updateOne({user_id},{born: data.born, firstname: data.firstname, lastname:data.lastname }, ((err,result)=>{
+          if (err) {
+            console.log(err)
+          } else {
+            console.log(result)
+            res.status(200).json(result);
+          }
+       }));
       }
       catch(error){        
         res.status(404).json({ message: error });
@@ -60,16 +103,15 @@ const UpdateUser = (async(req, res)=>{
     }
 })
 
+
 const SingleUser = (async(req, res)=>{
-    const user_id = req.id;
+    const {user_id} = req.id;
     if (!user_id) {
       res.status(500).json({ error: "No user found" });
     } else {
       try {
-        let query = `SELECT * FROM  profiles  WHERE user_id = "${user_id}"`;
-        connection.query(query, async function(error, data){
-          res.status(200).json(data)
-        })
+        const users =   await Profile.find({user_id})
+        res.status(200).json(users)
       } catch (err) {
         res.status(501).json({ message: err.message });
       }
@@ -191,4 +233,4 @@ const handleDailyPPFbonus =  (async(req, res)=>{
     })  
 })
 
-module.exports = { SingleUser, UpdateUser, UpdateProfile,handleHiddenProfile , handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus }
+module.exports = { SingleUser, UpdateUser, UpdateProfile,handleHiddenProfile , handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus, createProfile }

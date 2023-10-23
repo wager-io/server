@@ -1,13 +1,13 @@
-const { connection } = require("../database/index")
+const CrashHash = require("../model/crash_hash")
 const crypto = require('crypto');
 
 
-function hashInput(input, times) {
+const hashInput = async(input, times)=> {
     let hashedValue = input;
     let num = 1
     let gameId = 100000
 
-    let inter = setInterval(()=>{
+    let inter = setInterval(async()=>{
         const hash = crypto.createHash('sha256');
         hashedValue = hash.update(hashedValue).digest('hex');
         if(num <= times){
@@ -15,23 +15,16 @@ function hashInput(input, times) {
                 game_id: gameId + num,
                 game_hash: hashedValue
             }
-            let sql = `INSERT INTO crash_hash SET ?`;
-            connection.query(sql, data, (err, result)=>{
-                if(err){
-                    console.log(err)
-                }else{
-                    console.log(num)
-                }
-            })
+          let saved = await CrashHash.create(data)
+            console.log(saved, num)
             num += 1
         }else{
             console.log("Generated hashes completed")
             clearInterval(inter)
         }
-    },50)
+    },100)
 }
  
-
-  const input = 'c242f95eeb39166966118ceb07d35766ded15105390cbab8e26a60022a666d4d'; // Replace with your actual input
-  const numberOfTimesToHash =  500000;
+const input = `d71e0f071db39ecf8f1331ddfa58c073d267ee9388c4c4c967918a721f032042` // Replace with your actual input
+const numberOfTimesToHash =  300000;
 //  hashInput(input, numberOfTimesToHash);
