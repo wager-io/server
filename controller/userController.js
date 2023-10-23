@@ -301,10 +301,8 @@ const userAffiliateCodes = (async(req, res)=>{
 const SingleUserByID = (async(req, res)=>{
     const {id} = req.params;
     try{
-        let query = `SELECT * FROM profiles WHERE user_id="${id}"`;
-        connection.query(query, async function(error, response){
-            res.status(200).json(response)
-        })
+        const users =   await Profile.find({user_id:id})
+        console.log(users)
     }
     catch(error){
         res.status(500).json({error})

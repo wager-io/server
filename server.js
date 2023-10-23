@@ -5,7 +5,7 @@ const mongoose = require('mongoose')
 // const Admin = require("./routes/admin/admin");
 // const AllPLays = require("./routes/admin/PLayers/crashPlayers");
 // const VerifyGames = require("./routes/admin/games/crash");
-// const AdminStat = require("./routes/admin/statistic/statistics");
+const AdminStat = require("./routes/admin/statistic/statistics");
 // const Dashboard = require("./routes/admin/dashboard/dashboard");
 // const Affiliate = require("./routes/affiliate");
 // const payment_api = require("./routes/payment_api");
@@ -70,7 +70,7 @@ app.use("/api/wallet", Wallet);
 // app.use("/admin", Admin);
 // app.use("/admin/all-players", AllPLays);
 // app.use("/admin/verify", VerifyGames);
-// app.use("/admin/stat", AdminStat);
+app.use("/admin/stat", AdminStat);
 
 app.get("/", (req, res)=>{
   res.send("Welcome to Wager server")

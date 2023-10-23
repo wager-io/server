@@ -58,19 +58,16 @@ const createProfile = (async(email,username, invited_code, user_id )=>{
 const UpdateProfile = (async(req, res)=>{
   const {user_id} = req.id;
   const {data} = req.body
-
   if (!user_id) {
     res.status(500).json({ error: "No user found" });
   } else{
     try{
-      Profile.updateOne({user_id},{born: data.born, firstname: data.firstname, lastname:data.lastname }, ((err,result)=>{
-        if (err) {
-          console.log(err)
-        } else {
-          console.log(result)
-          res.status(200).json(result);
-        }
-     }));
+     await Profile.updateOne({ user_id }, {
+      born: data.born,
+       firstname: data.firstname,
+        lastname:data.lastname
+     });
+     res.status(200).json({message: "Updated succesfully"})
     }
     catch(error){
       res.status(501).json({ message: error });
@@ -82,20 +79,16 @@ const UpdateProfile = (async(req, res)=>{
 const UpdateUser = (async(req, res)=>{
     const {user_id} = req.id;
     const {data} = req.body
-
     if (!user_id) {
       res.status(500).json({ error: "No user found" });
     } 
     else{
       try{
-        Profile.updateOne({user_id},{born: data.born, firstname: data.firstname, lastname:data.lastname }, ((err,result)=>{
-          if (err) {
-            console.log(err)
-          } else {
-            console.log(result)
-            res.status(200).json(result);
-          }
-       }));
+       await Profile.updateOne({ user_id }, {
+        username: data.username,
+        profile_image: data.profile_img,
+       });
+       res.status(200).json({message: "Updated succesfully"})
       }
       catch(error){        
         res.status(404).json({ message: error });
