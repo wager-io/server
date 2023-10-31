@@ -1,8 +1,8 @@
 const Wallet = require("../model/wallet")
 const BTCWallet = require("../model/Usdt-wallet")
 const EThHWallet = require("../model/PPL-wallet")
-const WGFWallet = require("../model/wgf-wallet")
-const WGDWallet = require("../model/wgd-wallet")
+const WGFWallet = require("../model/PPF-wallet")
+const WGDWallet = require("../model/PPD-wallet")
 
 // ================ store USDt wallet details ===================
 const handleDefaultWallet = (async(user_id)=>{

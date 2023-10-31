@@ -201,22 +201,22 @@ const handleDailyPPFbonus =  (async(req, res)=>{
        });
     }
   
-    let trx_rec = {
-      user_id,
-      transaction_type: "PPF daily bonus", 
-      sender_img: "---", 
-      sender_name: "DPP_wallet", 
-      sender_balance: 0,
-      trx_amount: 20000,
-      receiver_balance: prev_bal + 20000,
-      datetime: currentTime, 
-      receiver_name: "PPF",
-      receiver_img: "https://res.cloudinary.com/dxwhz3r81/image/upload/v1697828376/ppf_logo_ntrqwg.png",
-      status: 'successful',
-      transaction_id: Math.floor(Math.random()*1000000000)+ 100000000,
-      is_sending: 0
-    }
-    handleProfileTransactions(trx_rec)
+    // let trx_rec = {
+    //   user_id,
+    //   transaction_type: "PPF daily bonus", 
+    //   sender_img: "---", 
+    //   sender_name: "DPP_wallet", 
+    //   sender_balance: 0,
+    //   trx_amount: 20000,
+    //   receiver_balance: prev_bal + 20000,
+    //   datetime: currentTime, 
+    //   receiver_name: "PPF",
+    //   receiver_img: "https://res.cloudinary.com/dxwhz3r81/image/upload/v1697828376/ppf_logo_ntrqwg.png",
+    //   status: 'successful',
+    //   transaction_id: Math.floor(Math.random()*1000000000)+ 100000000,
+    //   is_sending: 0
+    // }
+    // handleProfileTransactions(trx_rec)
     res.status(200).json({message: "daily ppf added successfully"})
   }
   catch(err){
