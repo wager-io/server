@@ -848,7 +848,7 @@ if (multiplierEL >= crash_point.crashpoint) {
           setTimeout(() => {
             HandleCountDown(5)
             load_animate = 100
-        }, 10);
+        }, 3000);
       } 
     else {
         fetch_activePlayers(crash_point.game_id)
