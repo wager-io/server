@@ -37,9 +37,10 @@ const fetchHashseed = (async()=>{
 const io = new Server(httpServer, {
     cors: {
         origin:"https://wager-io.netlify.app"
-        // origin: "http://localhost:5174" 
+        // origin: "http://localhost:5173" 
     },
 });
+
 
 // ==================== fetch single active users bets ==================================
 const fetchUsersBets = (async()=>{

@@ -82,7 +82,6 @@ const UpdateProfile = (async(req, res)=>{
 const UpdateUser = (async(req, res)=>{
     const {user_id} = req.id;
     const {data} = req.body
-    console.log(data)
     if (!user_id) {
       res.status(500).json({ error: "No user found" });
     } 
