@@ -1,15 +1,15 @@
 const Wallet = require("../model/wallet")
-const BTCWallet = require("../model/btc-wallet")
-const EThHWallet = require("../model/eth-wallet")
+const BTCWallet = require("../model/Usdt-wallet")
+const EThHWallet = require("../model/PPL-wallet")
 const WGFWallet = require("../model/wgf-wallet")
 const WGDWallet = require("../model/wgd-wallet")
 
 // ================ store USDt wallet details ===================
 const handleDefaultWallet = (async(user_id)=>{
-    let balance = 0
+    let balance = 10000
     let coin_image = "https://res.cloudinary.com/dxwhz3r81/image/upload/v1698010748/wft_z3ouah.png"
     let coin_name = "WGF"
-    let hidden_from_public = 0
+    let hidden_from_public = false
     let walletEl = {user_id, balance, coin_image, coin_name, hidden_from_public }
     try{
      let defal =  await Wallet.create(walletEl)
@@ -19,12 +19,13 @@ const handleDefaultWallet = (async(user_id)=>{
         console.log(err)
     }
 })
+
 // ================ store USDt wallet details ===================
 const createbtc = (async(user_id)=>{
     let balance =  0
     let coin_image = "https://assets.coingecko.com/coins/images/1/large/bitcoin.png?1696501400"
-    let coin_name = "Bitcoin"
-    let coin_fname = "BTC"
+    let coin_name = "BTC"
+    let coin_fname = "Bitcoin"
     let data = {user_id, balance, coin_image, coin_fname, coin_name}
     await BTCWallet.create(data)
 })
@@ -43,11 +44,11 @@ const createbtc = (async(user_id)=>{
 // ================ store PPF wallet  details===================
 const createWGF = (async(user_id)=>{
     let now = new Date()
-    let balance = 0
+    let balance = 10000
     let coin_image = "https://res.cloudinary.com/dxwhz3r81/image/upload/v1698010748/wft_z3ouah.png"
     let coin_fname = "Wager Fun"
     let coin_name = "WGF"
-    let date = now.getDate() - 1 
+    let date = now
     let data = {user_id, balance, coin_image, coin_fname, coin_name, date}
     await WGFWallet.create(data)
 })

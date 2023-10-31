@@ -1,48 +1,42 @@
-const { connection } = require("../database/index.js") 
+const CrashGame = require("../model/crashgame")
+const DiceGame = require("../model/dice_game")
 
 const globalStat = (async( req, res )=>{
-    const user_id = req.id
+    const {user_id} = req.id
     let global_statistics = []
     try{
-        let query = `SELECT * FROM crash_game WHERE user_id="${user_id}"`;
-        connection.query(query, async function(error, response){
-            for (let i = 0; i < response.length; i++) {
-                const element = response[i];
-                global_statistics.push(element)
-            }
-        })
+    let response = await CrashGame.updateOne({user_id})
+    response.forEach(element => {
+        global_statistics.push(element)
+    })
 
-        let query1 = `SELECT * FROM dice_game WHERE user_id="${user_id}"`;
-        connection.query(query1, async function(error, response){
-            for (let i = 0; i < response.length; i++) {
-                const element = response[i];
-                global_statistics.push(element)
-            }
-        })
+    let dice_res = await DiceGame.updateOne({user_id})
+    dice_res.forEach(element => {
+        global_statistics.push(element)
+    })
+    let PPF = []
+    let PPF_lose = []
+    let PPF_win = []
+    let PPF_img = ''
+    let PPF_wagered = 0
 
-        let PPF = []
-        let PPF_lose = []
-        let PPF_win = []
-        let PPF_img = ''
-        let PPF_wagered = 0
+    let PPD = []
+    let PPD_lose = []
+    let PPD_win = []
+    let PPD_img = ''
+    let PPD_wagered = 0
 
-        let PPD = []
-        let PPD_lose = []
-        let PPD_win = []
-        let PPD_img = ''
-        let PPD_wagered = 0
+    let PPL = []
+    let PPL_lose = []
+    let PPL_win = []
+    let PPL_img = ''
+    let PPL_wagered = 0
 
-        let PPL = []
-        let PPL_lose = []
-        let PPL_win = []
-        let PPL_img = ''
-        let PPL_wagered = 0
-
-        let USDT = []
-        let USDT_lose = []
-        let USDT_win = []
-        let USDT_img = ''
-        let USDT_wagered = 0
+    let USDT = []
+    let USDT_lose = []
+    let USDT_win = []
+    let USDT_img = ''
+    let USDT_wagered = 0
 
         setTimeout(()=>{
             for (let index = 0; index < global_statistics.length; index++) {
@@ -101,28 +95,27 @@ const globalStat = (async( req, res )=>{
             let ppl = {ppl_bets:PPL.length, ppl_win: PPL_win.length, ppl_lose: PPL_lose.length, ppl_wagered:PPL_wagered, ppl_img:PPL_img }
             let usdt = {usdt_bets:USDT.length, usdt_win: USDT_win.length, usdt_lose: USDT_lose.length, usdt_wagered:USDT_wagered, usdt_img:USDT_img }
 
-            res.status(200).json({total_wagered, total_bet,total_lose,total_win, ppf, ppd, ppl, usdt})
+        res.status(200).json({total_wagered, total_bet,total_lose,total_win, ppf, ppd, ppl, usdt})
         },500)
     }
     catch(error){
         res.status(500).json({error})
+        console.log(error)
     }
 })
 
 
 
 const CrashGameStat = (async( req, res )=>{
-    const user_id = req.id
+    const {user_id} = req.id
     let global_statistics = []
 
     try{
-        let query = `SELECT * FROM crash_game WHERE user_id="${user_id}"`;
-        connection.query(query, async function(error, response){
-            for (let i = 0; i < response.length; i++) {
-                const element = response[i];
-                global_statistics.push(element)
-            }
+        let response = await CrashGame.updateOne({user_id})
+        response.forEach(element => {
+            global_statistics.push(element)
         })
+    
 
         let PPF = []
         let PPF_lose = []
@@ -216,18 +209,14 @@ const CrashGameStat = (async( req, res )=>{
 
 
 const DiceGameStat = ( async( req, res )=>{
-    const user_id = req.id
+    const {user_id} = req.id
     let global_statistics = []
     try{
 
-        let query1 = `SELECT * FROM dice_game WHERE user_id="${user_id}"`;
-        connection.query(query1, async function(error, response){
-            for (let i = 0; i < response.length; i++) {
-                const element = response[i];
-                global_statistics.push(element)
-            }
+        let dice_res = await DiceGame.updateOne({user_id})
+        dice_res.forEach(element => {
+            global_statistics.push(element)
         })
-
         let PPF = []
         let PPF_lose = []
         let PPF_win = []

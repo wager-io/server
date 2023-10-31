@@ -3,171 +3,156 @@ const { format } = require('date-fns');
 const currentTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 const {crashPointFromHash} = require("./hashseed")
 const { handleCrashHistory, handleGameCrash , handleMoonTrendballEl} = require("./crashStore.js")
-const { connection } = require("../database/index")
 const { handleProfileTransactions } = require("../profile_mangement/index")
-const {Helper} = require('../utils/helperFunction')
+
 const { handleRechargeimplement } = require("../profile_mangement/cashbacks")
 const { handleMonthlyCashbackImplementation } = require("../profile_mangement/monthlycashback")
-const { handleWeeklyCashbackImplementation, Nextmonday } = require("../profile_mangement/week_cashback")
-const helper = new Helper()
-const crypto = require("crypto");
-
+const { handleWeeklyCashbackImplementation } = require("../profile_mangement/week_cashback")
+const CrashHash = require("../model/crash_hash")
+const CrashGame = require("../model/crashgame")
+const CrashHistory = require("../model/crash-game-history")
+const Chats = require("../model/public-chat")
+const CashBackDB = require("../model/cash_back")
+const DiceGame = require("../model/dice_game")
+const Wallet = require("../model/wallet")
+const USDT_wallet = require("../model/Usdt-wallet")
+const PPFWallet = require("../model/PPF-wallet");
+let is_consumed = 1
 
 async function createsocket(httpServer){
 const fetchHashseed = (async()=>{
-    let yu = []
-    const consumed = await helper.updateCrashConsume()  || 1
-    let query = `SELECT * FROM crash_hash`;
-    connection.query(query, async(error, data)=>{
-    yu.push(data[data.length - consumed])
-    let f = setTimeout(()=>{
-        let r = crashPointFromHash(yu[0])
-        handleCrashPoint(r)
-    },500)
-})
+    try{
+        const crashes = await CrashHash.find()
+        let crash_reps = crashes[crashes.length - is_consumed]
+        let result = crashPointFromHash(crash_reps)
+        is_consumed += 1
+        return result
+    }
+    catch(error){
+        console.log("There no crash hash or Network issues")
+    }
 })
 
 
 const io = new Server(httpServer, {
     cors: {
-        origin: "http://localhost:5173",
+        // origin:"https://dotplayplay.netlify.app"
+        origin: "http://localhost:5173" 
     },
 });
 
-let details = ''
-const handleCrashPoint = ((e)=>{
-    details = (e)
-})
-
 // ==================== fetch single active users bets ==================================
-const fetchUsersBets = (()=>{
-    let query = `SELECT * FROM  crash_game`;
-    connection.query(query, async function(error, data){
-        io.emit("my-bet", data)
-    })
+const fetchUsersBets = (async()=>{
+    const data = await CrashGame.find()
+     io.emit("my-bet", data)
 })
 
-const fetch_activePlayers = ((game_id)=>{
-    let query = `SELECT * FROM  crash_game  WHERE game_id = "${game_id}"`;
-    connection.query(query, async function(error, data){
+const fetch_activePlayers = (async(game_id)=>{
+    try{
+        const data = await CrashGame.find({game_id})
         io.emit("active_players", data)
         io.emit("crash-game-redtrend", data)
-    })
+    }
+    catch(error){
+        console.log("Could not find games")
+    }
+ 
 })
 
-const fetchPreviousCrashHistory = (()=>{
-    let query = `SELECT * FROM  crash_game_history`;
-    connection.query(query, async function(error, data){
-        io.emit("crash-game-history", data)
-    })
+const fetchPreviousCrashHistory = (async()=>{
+    const data = await CrashHistory.find()
+    io.emit("crash-game-history", data)
 })
 
-const autobetWallet = ((event)=>{
-    let query = `SELECT * FROM  wallet WHERE user_id="${event.user_id}"`;
-    connection.query(query, async function(error, res){
-        let old_bal = parseFloat(res[0].balance)
-        let win_amount = parseFloat(event.bet_amount) * 1.98
-        let update_bal = parseFloat(old_bal + win_amount).toFixed(4)
 
-     let sql2 = `UPDATE wallet SET balance="${update_bal}" WHERE user_id="${event.user_id}" `;
-         connection.query(sql2, function (err, result) {
-           if (err) throw err;
+const autobetWallet = (async(event)=>{
+    let wallet = await Wallet.find({user_id:event.user_id})
+
+    let old_bal = parseFloat(wallet[0].balance)
+    let win_amount = parseFloat(event.bet_amount) * 1.98
+    let update_bal = parseFloat(old_bal + win_amount).toFixed(4)
+
+    await Wallet.updateOne({user_id:event.user_id}, {
+        balance:update_bal
     })
 
-        let receiverWallet = ''
-        if(event.token === "USDT"){
-        receiverWallet = `usdt_wallet` 
-        }
-        else if(event.token === "PPD"){
-        receiverWallet = `ppd_wallet` 
-        }
-        else if(event.token === "PPF"){
-            receiverWallet = `ppf_wallet` 
-        }
+    if(event.token === "PPF"){
+        await PPFWallet.updateOne({ user_id:event.user_id }, {balance: update_bal });
+      }
+      else if(event.token === "USDT"){
+        await USDT_wallet.updateOne({ user_id:event.user_id }, {balance: update_bal });
+    }
+ setTimeout(()=>{
+    let trx_rec = {
+        user_id: event.user_id,
+        transaction_type: "Crash-Win", 
+        sender_img: "---", 
+        sender_name: "DPP_wallet", 
+        sender_balance: 0,
+        trx_amount: win_amount,
+        receiver_balance: update_bal,
+        datetime: currentTime, 
+        receiver_name: event.token,
+        receiver_img: event.token_img,
+        status: 'successful',
+        transaction_id: Math.floor(Math.random()*1000000000)+ 100000000,
+        is_sending: 0
+      }
+      handleProfileTransactions(trx_rec)
+ },400)
 
-         let sql3 = `UPDATE ${receiverWallet} SET balance="${update_bal}"  WHERE user_id="${event.user_id}"`;
-         connection.query(sql3, function (err, result) {
-           if (err) throw err;
-           (result)
-         })
+     io.emit("redball_update_wallet", {update_bal, ...event})
+     await CrashGame.updateOne({
+        user_id:event.user_id,
+        game_id:event.game_id,
+        game_type: "Classic"
+     },{
+        game_status: false,
+        user_status: false,
+        cashout: parseFloat(event.auto_cashout) - 0.01,
+        profit: (parseFloat(event.bet_amount) * parseFloat(event.auto_cashout)) - parseFloat(event.bet_amount) - 0.01,
+        has_won: true
+     })
 
-         setTimeout(()=>{
-            let trx_rec = {
-                user_id: event.user_id,
-                transaction_type: "Crash-Win", 
-                sender_img: "---", 
-                sender_name: "DPP_wallet", 
-                sender_balance: 0,
-                trx_amount: win_amount,
-                receiver_balance: update_bal,
-                datetime: currentTime, 
-                receiver_name: event.token,
-                receiver_img: event.token_img,
-                status: 'successful',
-                transaction_id: Math.floor(Math.random()*1000000000)+ 100000000,
-                is_sending: 0
-              }
-            
-              handleProfileTransactions(trx_rec)
-         },400)
-
-        io.emit("redball_update_wallet", {update_bal, ...event})
-    })
-
-    let sql2 = `UPDATE crash_game SET game_status="${0}", user_status="${0}", cashout="${parseFloat(event.auto_cashout) - 0.01}", profit="${(parseFloat(event.bet_amount) * parseFloat(event.auto_cashout)) - parseFloat(event.bet_amount) - 0.01}", has_won="${1}"  WHERE user_id="${event.user_id}" AND game_id="${event.game_id}" AND game_type="Classic" `;
-    connection.query(sql2, function (err, result) {
-      if (err) throw err;
-        io.emit("crash-autobet-users", "is-crash")
-    });
+     io.emit("crash-autobet-users", "is-crash")
 })
 
 let auto = []
-const handleAuto_cashout = ((event, point)=>{
-    let query = `SELECT * FROM  crash_game WHERE game_id="${point}" AND game_type="${'Classic'}" `;
-    connection.query(query, async function(error, data){
-        for(let i = 0; i < data.length; i++){
-            if( event > data[i].auto_cashout){
-                if(data[i].user_status){
-                    if(!auto.includes(data[i].user_id)){
-                        auto.push(data[i].user_id)
-                        autobetWallet(data[i])
-                    }
+const handleAuto_cashout = (async(event, point)=>{
+    let data = await CrashGame.find({game_type:"Classic", game_id:point})
+    for(let i = 0; i < data.length; i++){
+        if( event > data[i].auto_cashout){
+            if(data[i].user_status){
+                if(!auto.includes(data[i].user_id)){
+                    auto.push(data[i].user_id)
+                    autobetWallet(data[i])
                 }
             }
         }
-    })
+    }
 })
 
 //  ============================================ Red trendball section ==================================================
 
+
 // Get player's wallet
-const GetRedtrendWallet = ((event, game_id)=>{
-    let query = `SELECT * FROM  wallet WHERE user_id="${event.user_id}"`;
-    connection.query(query, async function(error, res){
-        let old_bal = res[0].balance
+const GetRedtrendWallet = (async(event, game_id)=>{
+    let wallet = await Wallet.find({user_id:event.user_id})
+
+        let old_bal = wallet[0].balance
         let win_amount = parseFloat(event.bet_amount * 1.98)
          let update_bal = parseFloat(old_bal) + win_amount
 
-     let sql2 = `UPDATE wallet SET balance="${update_bal}" WHERE user_id="${event.user_id}" `;
-         connection.query(sql2, function (err, result) {
-           if (err) throw err;
-           (result)
-    });
-         let receiverWallet = ''
-         if(event.token === "USDT"){
-           receiverWallet = `usdt_wallet` 
-         }
-         else if(event.token === "PPD"){
-           receiverWallet = `ppd_wallet` 
-         }
-           else if(event.token === "PPF"){
-             receiverWallet = `ppf_wallet` 
-         }
-         let sql3 = `UPDATE ${receiverWallet} SET balance="${update_bal}"  WHERE user_id="${event.user_id}"`;
-         connection.query(sql3, function (err, result) {
-           if (err) throw err;
-           (result)
-         })
+         await Wallet.updateOne({user_id:event.user_id}, {
+            balance:update_bal
+        })
+    
+        if(event.token === "PPF"){
+            await PPFWallet.updateOne({ user_id:event.user_id }, {balance: update_bal});
+          }
+          else if(event.token === "USDT"){
+            await USDT_wallet.updateOne({ user_id:event.user_id }, {balance: update_bal});
+        }
 
          setTimeout(()=>{
             let trx_rec = {
@@ -188,173 +173,172 @@ const GetRedtrendWallet = ((event, game_id)=>{
               handleProfileTransactions(trx_rec)
          },400)
 
-        io.emit("redball_update_wallet", {update_bal, ...event})
-    })
-
-    let sql2 = `UPDATE crash_game SET game_status="${0}", user_status="${0}", cashout="${1.98}", profit="${parseFloat(event.bet_amount) * 1.98}", payout="${1.98}", has_won="${1}"  WHERE user_id="${event.user_id}" AND game_id="${game_id}" AND game_type="Red" `;
-    connection.query(sql2, function (err, result) {
-      if (err) throw err;
-      (result)
-        io.emit("crash-all-redball-users", "is-crash")
-    });
+        await CrashGame.updateOne({
+            user_id:event.user_id,
+            game_id:game_id,
+            game_type: "Red"
+         },{
+            game_status: false,
+            user_status: false,
+            cashout:1.98,
+            profit: parseFloat(event.bet_amount) * 1.98,
+            payout:1.98,
+            has_won: true
+         })
+    
+    io.emit("redball_update_wallet", {update_bal, ...event})
+    io.emit("crash-all-redball-users", "is-crash")
 })
 
 
 // Notify winning update
-const handleRedtrendballCashout = ((game_id)=>{
-    let query = `SELECT * FROM  crash_game  WHERE game_id="${game_id}" AND game_type="Red"`;
-    connection.query(query, async function(error, data){
-       for(let i = 0; i < data.length; i++){
+const handleRedtrendballCashout = (async(game_id)=>{
+    let data = await CrashGame.find({game_id:game_id,game_type:"Red"})
+    for(let i = 0; i < data.length; i++){
         GetRedtrendWallet(data[i], game_id)
         io.emit("crash-all-redball-users", "has_win")
-       }
-    })
+    }
 })
 
 //================== update payout and crash hash ===========================
-const handleRedTrendballEl = ((game)=>{
-    let sql2 = `UPDATE crash_game SET payout="${game.crashpoint}",  game_hash="${game.hash}", game_status="${0}" WHERE game_id="${game.game_id}" AND game_type="Red" `;
-    connection.query(sql2, function (err, result) {
-      if (err) throw err;
-      (result)
-    });
+const handleRedTrendballEl = (async(game)=>{
+    await CrashGame.updateMany({
+        game_id:game.game_id,
+        game_type: "Red"
+     },{
+        game_status: false,
+        payout:game.crashpoint,
+        game_hash:game.hash
+     })
 })
 
 //  ====== red trend ball lost ============
-const handleRedTrendball = ((game)=>{
+const handleRedTrendball = (async(game)=>{
     if(game.game_id !== undefined){
-        let sql2 = `UPDATE crash_game SET user_status="${0}", cashout="${0}", profit="${0}", has_won="${0}" WHERE game_id="${game.game_id}" AND game_type="Red" `;
-        connection.query(sql2, function (err, result) {
-          if (err) throw err;
-          (result)
-            io.emit("crash-all-redball-users", "is-crash")
-        });
+        await CrashGame.updateMany({
+            game_id:game.game_id,
+            game_type: "Red"
+         },{
+            user_status: false,
+            cashout:0,
+            profit:0,
+            has_won:false,
+         })
+        io.emit("crash-all-redball-users", "is-crash")
     }
 })
 
 // ==================================================== Green Trendball section =============================================================== 
 // Get player's wallet
-const GetGreentrendWallet = ((event, game_id)=>{
-    let query = `SELECT balance FROM  wallet  WHERE user_id="${event.user_id}"`;
-    connection.query(query, async function(error, res){
-        let old_bal =  parseFloat(res[0].balance)
-        let win_amount = parseFloat(event.bet_amount * 2)
-        let update_bal = parseFloat(old_bal + win_amount)
-        let sql2 = `UPDATE wallet SET balance="${update_bal}" WHERE user_id="${event.user_id}" `;
-        connection.query(sql2, function (err, result) {
-          if (err) throw err;
-          (result)
-        });
-        let receiverWallet = ''
-        if(event.token === "USDT"){
-          receiverWallet = `usdt_wallet` 
-        }
-        else if(event.token === "PPD"){
-          receiverWallet = `ppd_wallet` 
-        }
-          else if(event.token === "PPF"){
-            receiverWallet = `ppf_wallet` 
-        }
-        let sql3 = `UPDATE ${receiverWallet} SET balance="${update_bal}"  WHERE user_id="${event.user_id}"`;
-        connection.query(sql3, function (err, result) {
-          if (err) throw err;
-          (result)
-        })
+const GetGreentrendWallet = (async(event, game_id)=>{
+    let wallet = await Wallet.find({user_id:event.user_id})
 
-        setTimeout(()=>{
-            let trx_rec = {
-                user_id: event.user_id,
-                transaction_type: "Crash-Win", 
-                sender_img: "---", 
-                sender_name: "DPP_wallet", 
-                sender_balance: 0,
-                trx_amount: win_amount,
-                receiver_balance: update_bal,
-                datetime: currentTime, 
-                receiver_name: event.token,
-                receiver_img: event.token_img,
-                status: 'successful',
-                transaction_id: Math.floor(Math.random()*1000000000)+ 100000000,
-                is_sending: 0
-              }
-              handleProfileTransactions(trx_rec)
-         },400)
+    let old_bal =  parseFloat(wallet[0].balance)
+    let win_amount = parseFloat(event.bet_amount * 2)
+    let update_bal = parseFloat(old_bal + win_amount)
 
+    await Wallet.updateOne({user_id:event.user_id}, {
+        balance:update_bal
+    })
 
-        io.emit("redball_update_wallet", {update_bal, ...event})
-})
+    if(event.token === "PPF"){
+        await PPFWallet.updateOne({ user_id:event.user_id }, {balance: update_bal });
+      }
+      else if(event.token === "USDT"){
+        await USDT_wallet.updateOne({ user_id:event.user_id }, {balance: update_bal });
+    }
+    setTimeout(()=>{
+        let trx_rec = {
+            user_id: event.user_id,
+            transaction_type: "Crash-Win", 
+            sender_img: "---", 
+            sender_name: "DPP_wallet", 
+            sender_balance: 0,
+            trx_amount: win_amount,
+            receiver_balance: update_bal,
+            datetime: currentTime, 
+            receiver_name: event.token,
+            receiver_img: event.token_img,
+            status: 'successful',
+            transaction_id: Math.floor(Math.random()*1000000000)+ 100000000,
+            is_sending: 0
+          }
+          handleProfileTransactions(trx_rec)
+     },400)
 
-let sql2 = `UPDATE crash_game SET game_status="${0}", user_status="${0}", cashout="${1.98}", profit="${parseFloat(event.bet_amount) * 1.98}", payout="${1.98}", has_won="${1}"  WHERE user_id="${event.user_id}" AND game_id="${game_id}" AND game_type="Green" `;
-connection.query(sql2, function (err, result) {
-  if (err) throw err;
-  (result)
+    io.emit("redball_update_wallet", {update_bal, ...event})
+
+    await CrashGame.updateOne({
+        user_id:event.user_id,
+        game_id:game_id,
+        game_type: "Green"
+     },{
+        game_status: false,
+        user_status: false,
+        cashout:2,
+        profit: parseFloat(event.bet_amount) * 2,
+        payout:2,
+        has_won: true
+     })
     io.emit("crash-all-redball-users", "is-crash")
-});
 })
-
 
 //================== update payout and crash hash ===========================
-const handleGreenTrendballEl = ((game)=>{
-    let sql2 = `UPDATE crash_game SET payout="${game.crashpoint}",  game_hash="${game.hash}", game_status="${0}" WHERE game_id="${game.game_id}" AND user_status="${0}" AND game_type="Green" `;
-    connection.query(sql2, function (err, result) {
-      if (err) throw err;
-      (result)
-    });
+const handleGreenTrendballEl = (async(game)=>{
+    await CrashGame.updateMany({
+        user_status:false,
+        game_id:game.game_id,
+        game_type: "Green"
+     },{
+        game_status: false,
+        payout:game.crashpoint,
+        game_hash:game.hash
+     })
 })
 
 
 //  ====== Green trend ball lost ============
-const handleGreenTrendball = ((game)=>{
-    let sql2 = `UPDATE crash_game SET user_status="${0}", cashout="${0}", profit="${0}", has_won="${0}" WHERE game_id="${game.game_id}" AND game_type="Green" `;
-    connection.query(sql2, function (err, result) {
-      if (err) throw err;
-      (result)
-        io.emit("crash-all-greenball-users", "is-crash")
-    });
+const handleGreenTrendball = (async(game)=>{
+    await CrashGame.updateMany({
+        game_id:game.game_id,
+        game_type: "Green"
+     },{
+        user_status: false,
+        cashout:0,
+        profit:0,
+        has_won:false
+     })
 })
 
 // Notify winning update
-const handleGreentrendballCashout = ((game_id)=>{
-    let query = `SELECT * FROM  crash_game  WHERE game_id="${game_id}" AND game_type="Green"`;
-    connection.query(query, async function(error, data){
-       for(let i = 0; i < data.length; i++){
+const handleGreentrendballCashout = (async(game_id)=>{
+   let data = await CrashGame.find({game_id:game_id,game_type:"Green" })
+    for(let i = 0; i < data.length; i++){
         GetGreentrendWallet(data[i], game_id)
         io.emit("crash-all-greenball-users", "has_win")
-       }
-    })
+    }
 })
 
 // ==================================================== Moon Trendball section =============================================================== 
 
 // Get player's wallet
-const GetMoontrendWallet = ((event, game_id)=>{
-    let query = `SELECT balance FROM  wallet  WHERE user_id="${event.user_id}"`;
-    connection.query(query, async function(error, res){
-        let old_bal = parseFloat(res[0].balance)
-        let win_amount = parseFloat(event.bet_amount) * 10
-        let update_bal = parseInt(old_bal + win_amount)
+const GetMoontrendWallet = (async(event, game_id)=>{
+    let wallet = await Wallet.find({user_id:event.user_id})
 
-        let sql2 = `UPDATE wallet SET balance="${update_bal}" WHERE user_id="${event.user_id}" `;
-        connection.query(sql2, function (err, result) {
-          if (err) throw err;
-          (result)
-        });
+    let old_bal =  parseFloat(wallet[0].balance)
+    let win_amount = parseFloat(event.bet_amount * 2)
+    let update_bal = parseFloat(old_bal + win_amount)
 
-        let receiverWallet = ''
-        if(event.token === "USDT"){
-          receiverWallet = `usdt_wallet` 
-        }
-        else if(event.token === "PPD"){
-          receiverWallet = `ppd_wallet` 
-        }
-          else if(event.token === "PPF"){
-            receiverWallet = `ppf_wallet` 
-        }
-        let sql3 = `UPDATE ${receiverWallet} SET balance="${update_bal}"  WHERE user_id="${event.user_id}"`;
-        connection.query(sql3, function (err, result) {
-          if (err) throw err;
-          (result)
-        })
+    await Wallet.updateOne({user_id:event.user_id}, {
+        balance:update_bal
+    })
+
+    if(event.token === "PPF"){
+        await PPFWallet.updateOne({ user_id:event.user_id }, {balance: update_bal });
+      }
+      else if(event.token === "USDT"){
+        await USDT_wallet.updateOne({ user_id:event.user_id }, {balance: update_bal });
+    }
 
         setTimeout(()=>{
             let trx_rec = {
@@ -376,39 +360,43 @@ const GetMoontrendWallet = ((event, game_id)=>{
          },400)
 
         io.emit("redball_update_wallet", {update_bal, ...event})
-    })
 
-
-let sql2 = `UPDATE crash_game SET game_status="${0}", user_status="${0}", cashout="${2}", profit="${event.bet_amount * 2}", payout="${2}", has_won="${1}"  WHERE user_id="${event.user_id}" AND game_id="${game_id}" AND game_type="Moon" `;
-connection.query(sql2, function (err, result) {
-  if (err) throw err;
-  (result)
+        await CrashGame.updateOne({
+            user_id:event.user_id,
+            game_id:game_id,
+            game_type: "Moon"
+         },{
+            game_status: false,
+            user_status: false,
+            cashout:2,
+            profit: parseFloat(event.bet_amount) * 2,
+            payout:2,
+            has_won: true
+         })
     io.emit("crash-all-moonball-users", "is-crash")
-});
-
 })
 
 // Notify winning update
-const handleMoontrendballCashout = ((game_id)=>{
-    let query = `SELECT * FROM  crash_game  WHERE game_id="${game_id}" AND game_type="Moon"`;
-    connection.query(query, async function(error, data){
+const handleMoontrendballCashout = (async(game_id)=>{
+    let data = await CrashGame.find({game_id:game_id,game_type:"Moon" })
        for(let i = 0; i < data.length; i++){
         GetMoontrendWallet(data[i], game_id)
         io.emit("crash-all-moonball-users", "has_win")
        }
-    })
 })
 
-
-
 //  ====== Moon trend ball lost ============
-const handleMoonTrendball = ((game)=>{
-    let sql2 = `UPDATE crash_game SET user_status="${0}", cashout="${0}", profit="${0}", has_won="${0}" WHERE game_id="${game.game_id}" AND game_type="Moon" `;
-    connection.query(sql2, function (err, result) {
-      if (err) throw err;
-      (result)
-        io.emit("crash-all-moonball-users", "is-crash")
-    });
+const handleMoonTrendball = (async(game)=>{
+    await CrashGame.updateMany({
+        game_id:game.game_id,
+        game_type: "Moon"
+     },{
+        user_status: false,
+        cashout:0,
+        profit:0,
+        has_won:false
+     })
+    io.emit("crash-all-moonball-users", "is-crash")
 })
 
 let cur
@@ -735,16 +723,16 @@ const handle_h_hundred = ((speed, action)=>{
 
 let load_animate = 100
 const HandleCountDown = ( async (e)=>{
-    fetchHashseed()
+   let detail = await fetchHashseed()
     fetchPreviousCrashHistory()
-    fetchUsersBets(details)
+    fetchUsersBets(detail)
     let timeSec = e
     let timeLoop = setInterval(() => {
     if (timeSec.toFixed(2) <= 0.1) {
         clearInterval(timeLoop);
-        handleMultiplier(details)
+        handleMultiplier(detail)
     }else{
-        fetch_activePlayers(details.game_id)
+        fetch_activePlayers(detail.game_id)
         timeSec -= 0.01;
         load_animate -= 0.2
 
@@ -758,7 +746,7 @@ const HandleCountDown = ( async (e)=>{
         io.emit("crash-state", "load-crash")
         io.emit("countdown", timeSec)
         io.emit("load-animation", load_animate)
-        io.emit("game_id", details.game_id)
+        io.emit("game_id", detail.game_id)
         io.emit("v_ten", 0)
         io.emit("v_hundred", 0)
         io.emit("v_FiveHundred", 0)
@@ -784,7 +772,6 @@ const HandleCountDown = ( async (e)=>{
     }
     }, 15);
 })
-
 
 //  =================================== All game crash handler ===================================
 
@@ -832,7 +819,10 @@ const handleCrashed = ((crash_point)=>{
 })
 
 // ====================== initialize the game countdown ============================
-HandleCountDown(5)
+let result = await fetchHashseed()
+if(result){
+    HandleCountDown(5)
+}
 
 // ================================================ Game logic =======================================
 
@@ -858,7 +848,7 @@ if (multiplierEL >= crash_point.crashpoint) {
           setTimeout(() => {
             HandleCountDown(5)
             load_animate = 100
-        }, 3000);
+        }, 10);
       } 
     else {
         fetch_activePlayers(crash_point.game_id)
@@ -1072,13 +1062,10 @@ if (multiplierEL >= crash_point.crashpoint) {
     }, 100);
 })
 
-const fetchActivePlayers = (()=>{
-    let query1 = `SELECT * FROM  dice_game`;
-    connection.query(query1, async function(error, data){
-        io.emit("dice-gamePLayers", data)
-    })
+const fetchActivePlayers = (async()=>{
+    let data = await DiceGame.find()
+     io.emit("dice-gamePLayers", data)
 })
-
 
 setInterval(()=>{
     fetchActivePlayers()
@@ -1086,59 +1073,68 @@ setInterval(()=>{
 
 //================ weeklyCASHBACK ================
 const weeklyCashback = async () => {
-    let query = `SELECT * FROM app_timer`;
-    connection.query(query, async(error, data)=>{
-        let alldate = (data[data.length - 1].next_monday)
-            let countDownDate = alldate.getTime();
-            let now = new Date().getTime();
-            let distance = countDownDate - now;
-            // Time calculations for days, hours, minutes and seconds
-            let days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            if (days === 0  && hours === 0 && minutes === 0 && seconds < 3) {
-                handleWeeklyCashbackImplementation();
-                Nextmonday()
-                handleRechargeimplement()
-            }else{
-                io.emit("weekly-count-down", `${ days !== 0 ? days + "d" : ""} ${hours}h ${minutes}m ${seconds}s`)
-            }
-    })
+    let fulldata = await CashBackDB.find().select("nextMonday")
+    if(fulldata.length  > 0){
+    let next_monday = fulldata[0].nextMonday
+    let countDownDate = new Date(next_monday).getTime();
+    let now = new Date().getTime();
+    let distance = countDownDate - now;
+    // Time calculations for days, hours, minutes and seconds
+    let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    if (days === 0  && hours === 0 && minutes === 0 && seconds < 3) {
+        handleWeeklyCashbackImplementation();
+    }else{
+        io.emit("weekly-count-down", `${ days !== 0 ? days + "d" : ""} ${hours}h ${minutes}m ${seconds}s`)
+    }
 }
+}
+
 setInterval(() => weeklyCashback(), 1000);
 
 //================ weeklyCASHBACK ================
 const monthlyCashback = async () => {
-    let query = `SELECT * FROM app_timer`;
-    connection.query(query, async(error, data)=>{
-        let alldate = (data[data.length - 1].next_firstofthemonth)
-            let countDownDate = alldate.getTime();
-            let now = new Date().getTime();
-            let distance = countDownDate - now;
-            // Time calculations for days, hours, minutes and seconds
-            let days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            if (new Date().getDate() === 1) {
-                Nextmonday()
-                handleMonthlyCashbackImplementation()
-            }else{
-                io.emit("monthly-count-down", `${ days !== 0 ? days + "d" : ""} ${hours}h ${minutes}m ${seconds}s`)
-            }
-    })
+    let fulldata = await CashBackDB.find().select("nextMonth")
+    if(fulldata.length  > 0){
+        let next_month = fulldata[0].nextMonth
+        let countDownDate = new Date(next_month).getTime();
+        let now = new Date().getTime();
+        let distance = countDownDate - now;
+        // Time calculations for days, hours, minutes and seconds
+        let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        if (new Date().getDate() === 1) {
+            handleMonthlyCashbackImplementation()
+        }else{
+            io.emit("monthly-count-down", `${ days !== 0 ? days + "d" : ""} ${hours}h ${minutes}m ${seconds}s`)
+        }
+    }
 }
-
 setInterval(() => monthlyCashback(), 1000);
-const previousChats = (()=>{
-    let query = `SELECT * FROM public_chat`;
-    connection.query(query, async function(error, response){
-        io.emit("public-chat", response)
+
+let newMessage = await Chats.find()
+
+const handleNewChatMessages = (async(data)=>{
+    io.emit("new-messages", newMessage)
+  await Chats.create(data)
+})
+
+io.on("connection", (socket)=>{
+    socket.on("message", data=>{
+        newMessage.push(data)
+        handleNewChatMessages(data)
+    })
+    socket.on("disconnect", ()=>{
+        console.log("disconnected")
     })
 })
-setInterval(() => previousChats(), 400);
+
 }
+
 
 module.exports = {
     createsocket

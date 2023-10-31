@@ -1,11 +1,15 @@
-const { connection } = require("../database")
+const CrashGame = require("../model/crashgame")
+
 
 const GetAllPlayersByGameId = (async(req, res)=>{
     const id = req.body
-    let query = `SELECT * FROM  crash_game  WHERE game_id="${id.game_id}"`;
-    connection.query(query, async function(error, data){
-        res.status(200).json(data)
-    })
+    try{
+        let response = await CrashGame.find({game_id:id.game_id})
+        res.status(200).json(response)
+    }
+    catch(error){
+        res.status(500).json({error: error})
+    }
 })
 
 module.exports = { GetAllPlayersByGameId }

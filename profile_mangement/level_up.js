@@ -1,50 +1,56 @@
-const { connection } = require("../database/index")
 const { format } = require('date-fns');
+const Transaction = require("../model/transaction")
 const currentTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+const DPP_wallet = require("../model/PPD-wallet")
+const CashBackDB = require("../model/cash_back")
+const ProfileDB = require("../model/Profile")
+const PPFwallet = require("../model/PPF-wallet")
 
-const handelLevelupBonuses = ((data, user_id)=>{
-    let query5 = `SELECT * FROM  ppd_wallet  WHERE user_id="${user_id}"`;
-    connection.query(query5, async function(error, res){
-        let prev_bal = parseFloat(res[0].balance)
-        let new_bal = prev_bal + parseFloat(data)
-        let sql2 = `UPDATE ppd_wallet SET balance="${new_bal}" WHERE user_id = "${user_id}"`;
-        connection.query(sql2, function (err, result) {
-          if (err) throw err;
-         (result)    
-        });
-        let sql3 = `UPDATE cashbacks SET total_level_bonus="${new_bal}" WHERE user_id = "${user_id}"`;
-        connection.query(sql3, function (err, result) {
-          if (err) throw err;
-         (result)    
-        });
+const handelLevelupBonuses = (async(data, user_id)=>{
+    const res = await DPP_wallet.find({user_id})
+    let prev_bal = parseFloat(res[0].balance)
+    let new_bal = prev_bal + parseFloat(data)
+
+    await DPP_wallet.updateOne({user_id}, {
+        balance:new_bal
+    })
+    await CashBackDB.updateOne({user_id}, {
+        total_level_bonus:new_bal
+    })
+    try{
         let trx_rec = {
             user_id: user_id,
             transaction_type: "Level Up", 
-            sender_img: "---", 
+            sender_img: "-", 
             sender_name: "DPP_wallet", 
             sender_balance: 0,
             trx_amount:  parseFloat(data),
             receiver_balance: new_bal,
             datetime: currentTime, 
             receiver_name: "PPD",
-            receiver_img: "https://www.linkpicture.com/q/dpp_logo.png",
+            receiver_img: "https://res.cloudinary.com/dxwhz3r81/image/upload/v1697828435/dpp_logo_sd2z9d.png",
             status: 'successful',
             transaction_id: Math.floor(Math.random()*1000000000)+ 100000000,
-            is_sending: 0
-          }
-          let sql = `INSERT INTO transactions SET ?`;
-          connection.query(sql, trx_rec, (err, RT)=>{
-                if(err){
-                  (err)
-                }else{
-                  (RT)
-                }
-          })
+            is_sending: false
+        }
+  await Transaction.create(trx_rec)
+    }
+    catch(error){
+        console.log(error)
+    }
+})
+
+const handlePPFLevelupBonus = (async(user_id)=>{
+   let result =  await PPFwallet.find({user_id})
+    let prev_bal = parseFloat(result[0].balance)
+    await PPFwallet.updateOne({user_id},{
+        balance:prev_bal + 10000
     })
 })
 
 
-const handelLevelups = ((data, user_id)=>{
+const handelLevelups = (async(data, user_id)=>{
+    handlePPFLevelupBonus(user_id)
     if( data === 2){
         handelLevelupBonuses(0.04, user_id )
     }
@@ -370,16 +376,12 @@ const handelLevelups = ((data, user_id)=>{
     else if(data === 102 ){
         handelLevelupBonuses(23000, user_id)
     } 
-    let sql2 = `UPDATE profiles SET vip_level="${data}" WHERE user_id = "${user_id}"`;
-    connection.query(sql2, function (err, result) {
-      if (err) throw err;
-     (result)
-    });
-    let sql3 = `UPDATE cashbacks SET vip_level="${data}" WHERE user_id = "${user_id}"`;
-    connection.query(sql3, function (err, result) {
-      if (err) throw err;
-     (result)    
-    });
+    await CashBackDB.updateOne({user_id}, {
+        vip_level:data
+    })
+    await ProfileDB.updateOne({user_id}, {
+        vip_level:data
+    })
 })
 
 module.exports = { handelLevelups}

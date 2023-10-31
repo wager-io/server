@@ -12,7 +12,6 @@ const {
 const { initiateWithdrawal } = require("../controller/withdrawController");
 
 router.post("/withdraw/usdt", initiateWithdrawal);
-
 router.post("/deposit", initializeDeposit);
 router.post("/deposit-confirm", confirmDeposit);
 router.post("/withdraw", initializeWithdrawal);

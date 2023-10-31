@@ -1,14 +1,15 @@
-const { connection } = require("../database/index")
 const { handelLevelups  } = require("./level_up")
 const { handleRechargeCashback } = require("./rechargebonus")
 const { handleWeeklyCashback } = require("./week_cashback")
+const CashBackDB = require("../model/cash_back")
+const ProfileDB = require("../model/Profile")
 const { handleMonthlyCashback } = require("./monthlycashback")
 const { handleAffiliateRewards, handleAffiliateCommission, handleProgressPercentage } = require("../profile_mangement/affilliate-system")
 const { unlockedPPD } = require("./ppd_unlock")
+const transaction = require("../model/transaction")
 
-const handleWagerIncrease = ((user_id, bet_amount, crypto)=>{
-   let query5 = `SELECT * FROM  cashbacks  WHERE user_id="${user_id}"`;
-   connection.query(query5, async function(error, data){
+const handleWagerIncrease = (async(user_id, bet_amount, crypto)=>{
+     let data = await CashBackDB.find({user_id})
      let prev_wager = parseFloat(data[0].total_wagered)
      let prev_level_up = parseInt((data[0].vip_level))
      let new_wager = bet_amount
@@ -565,30 +566,19 @@ const handleWagerIncrease = ((user_id, bet_amount, crypto)=>{
         prev_level_up < 102 &&  handelLevelups(102, user_id)
        } 
 
-      let sql2 = `UPDATE cashbacks SET total_wagered="${total_wagered}", next_level_point="${next_hit}"  WHERE user_id = "${user_id}"`;
-      connection.query(sql2, function (err, result) {
-        if (err) throw err;
-       (result)
-      })
-
-      let sql3 = `UPDATE profiles SET total_wagered="${total_wagered}" WHERE user_id = "${user_id}"`;
-      connection.query(sql3, function (err, result) {
-        if (err) throw err;
-       (result)
-      })
-    })
+       await CashBackDB.updateOne({user_id},{
+        total_wagered:total_wagered,
+        next_level_point:next_hit
+       })
+       await ProfileDB.updateOne({user_id},{
+        total_wagered:total_wagered,
+        next_level_point:next_hit
+       })
 })
 
 
-const handleProfileTransactions = ((sent)=>{
-  let sql = `INSERT INTO transactions SET ?`;
-  connection.query(sql, sent, (err, data)=>{
-        if(err){
-          (err)
-        }else{
-          (data)
-        }
-  })
+const handleProfileTransactions = (async(sent)=>{
+  await transaction.create(sent)
 })
 
 

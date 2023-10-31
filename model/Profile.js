@@ -14,6 +14,10 @@ const Userschema = new schema({
         type: String,
         required: true,
     },
+    next_level_point: {
+        type: String,
+        required: true,
+    },
     user_id: {
         type: String,
         required: true,

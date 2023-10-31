@@ -1,44 +1,45 @@
-const { connection } = require("../database/index")
+const Crash_history = require("../model/crash-game-history")
+const crash_game = require("../model/crashgame")
 
 // Store crash_ history after it crash
-const handleCrashHistory = ((e)=>{
+const handleCrashHistory = (async(e)=>{
     let data = {hash: e.hash, game_id:e.game_id, crash_point: e.crashpoint}
-    let sql = `INSERT INTO crash_game_history SET ?`;
-    connection.query(sql, data, (err, result)=>{
-        if(err){
-            (err)
-        }else{
-            (result)
-        }
-    })
+   let result = await Crash_history.create(data)
+   return result
 })
 
-const handleGameCrash = ((event)=>{
-    let sql3 = `UPDATE crash_game SET has_won="${0}", user_status="${0}", cashout="${0}", profit="${0}"  WHERE game_id="${event.game_id}" AND game_type="${'Classic'}" AND user_status="${1}"  `;
-    connection.query(sql3, function (err, result) {
-      if (err) throw err;
-      (result)
-    });
-    let sql2 = `UPDATE crash_game SET game_hash="${event.hash}", payout="${event.crashpoint}", game_status="${0}" WHERE game_id="${event.game_id}" AND game_type="${'Classic'}" `;
-    connection.query(sql2, function (err, result) {
-      if (err) throw err;
-      (result)
-    });
-    let sql4 = `UPDATE crash_game SET game_hash="${event.hash}", game_status="${0}" WHERE game_id="${event.game_id}"  `;
-    connection.query(sql4, function (err, result) {
-      if (err) throw err;
-      (result)
-    })
+const handleUpdateHash = (async(event)=>{
+   await crash_game.updateMany({ game_id: event.game_id }, {
+    game_hash: event.hash,
+    game_status: false,
+   });
+})
+
+
+const handleGameCrash = (async(event)=>{
+handleUpdateHash(event)
+   await crash_game.updateMany({ game_type: "Classic", user_status: true }, {
+      has_won: false,
+      user_status: false,
+      cashout: 0,
+      profit: 0
+     });
+
+     await crash_game.updateMany({ game_type: "Classic", game_id: event.game_id }, {
+      game_hash: event.hash,
+      payout: event.crashpoint,
+      game_status: false,
+     });
 })
 
 
 //================== update payout and crash hash ===========================
-const handleMoonTrendballEl = ((game)=>{
-    let sql2 = `UPDATE crash_game SET payout="${game.crashpoint}",  game_hash="${game.hash}", game_status="${0}" WHERE game_id="${game.game_id}" AND game_type="Moon" `;
-    connection.query(sql2, function (err, result) {
-      if (err) throw err;
-      (result)
-    });
+const handleMoonTrendballEl = (async(game)=>{
+  await crash_game.updateMany({ game_type: "Moon", game_id: game.game_id }, {
+    payout: game.crashpoint,
+    game_hash: game.hash,
+    game_status: false,
+   });
 })
 
 

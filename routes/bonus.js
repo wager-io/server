@@ -5,11 +5,9 @@ const requireAuth = require('../middleware/requireAuth')
 // auth middleware
 router.use(requireAuth)
 
-const { monthlyCashback } = require('../controller/monthlyCashback')
 const { handleAllCashbacks } = require('../profile_mangement/cashbacks')
 const { displayUnlockDDP } = require('../profile_mangement/ppd_unlock')
 
-router.get("/monthly-cashback", monthlyCashback)
 router.get("/", handleAllCashbacks)
 router.get("/displayUnlockDDP", displayUnlockDDP)
 

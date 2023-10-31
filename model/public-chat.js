@@ -6,26 +6,42 @@ const Userschema = new schema({
         type: String,
         required: true,
     },
-    server_seed: {
+    msg_id: {
         type: String,
         required: true,
     },
-    client_seed: {
+    username: {
         type: String,
         required: true,
     },
-    hash_seed: {
+    profle_img: {
         type: String,
         required: true,
     },
-    is_open: {
-        type: Boolean,
+    hide_profile: {
+        type: String,
         required: true,
     },
-    updated_at: {
+    type: {
+        type: String,
+        required: true,
+    },
+    text: {
+        type: String,
+        required: true,
+    },
+    gif: {
+        type: String,
+        required: true,
+    },
+    vip_level: {
+        type: Number,
+        required: true,
+    },
+    time: {
         type: Date,
         required: true,
     }
 }, { timestamp : true})
 
-module.exports = mongoose.model('dice_encryped_seed', Userschema)
+module.exports = mongoose.model('public_chat', Userschema)

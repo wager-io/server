@@ -1,8 +1,8 @@
 const Wallet = require("../model/wallet")
-const BTCWallet = require("../model/btc-wallet")
-const EThHWallet = require("../model/eth-wallet")
-const WGFWallet = require("../model/wgf-wallet")
-const WGDWallet = require("../model/wgd-wallet")
+const PPDWallet = require("../model/PPD-wallet")
+const PPLWallet = require("../model/PPL-wallet")
+const PPFWallet = require("../model/PPF-wallet")
+const USDTWallet = require("../model/Usdt-wallet")
 
 // ============= get wallet  ====================
 const GetPPDWallet = (async(req, res)=>{
@@ -12,7 +12,7 @@ const GetPPDWallet = (async(req, res)=>{
     }
     else {
       try {
-        const users = await BTCWallet.find({user_id})
+        const users = await PPDWallet.find({user_id})
         res.status(200).json(users)
       } catch (err) {
         res.status(501).json({ message: err.message });
@@ -26,22 +26,7 @@ const GetPPFWallet = (async(req, res)=>{
       res.status(500).json({ error: "No user found" });
     } else {
       try {
-        const users = await WGFWallet.find({user_id})
-        res.status(200).json(users)
-      } catch (err) {
-        res.status(501).json({ message: err.message });
-      }
-    }
-})
-
-
-const GetPPEWallet = (async(req, res)=>{
-    const {user_id} = req.id;
-    if (!user_id) {
-      res.status(500).json({ error: "No user found" });
-    } else {
-      try {
-        const users = await EThHWallet.find({user_id})
+        const users = await PPFWallet.find({user_id})
         res.status(200).json(users)
       } catch (err) {
         res.status(501).json({ message: err.message });
@@ -55,7 +40,7 @@ const GetPPLWallet = (async(req, res)=>{
       res.status(500).json({ error: "No user found" });
     } else {
       try {
-        const users = await WGDWallet.find({user_id})
+        const users = await PPLWallet.find({user_id})
         res.status(200).json(users)
       } catch (err) {
         res.status(501).json({ message: err.message });
@@ -63,13 +48,27 @@ const GetPPLWallet = (async(req, res)=>{
     }
 })
 
+// const GetPPLWallet = (async(req, res)=>{
+//     const {user_id} = req.id;
+//     if (!user_id) {
+//       res.status(500).json({ error: "No user found" });
+//     } else {
+//       try {
+//         const users = await WGDWallet.find({user_id})
+//         res.status(200).json(users)
+//       } catch (err) {
+//         res.status(501).json({ message: err.message });
+//       }
+//     }
+// })
+
 const GetUSDTWallet = (async(req, res)=>{
     const {user_id} = req.id;
     if (!user_id) {
       res.status(500).json({ error: "No user found" });
     } else {
       try {
-        const users = await EThHWallet.find({user_id})
+        const users = await USDTWallet.find({user_id})
         res.status(200).json(users)
       } catch (err) {
         res.status(501).json({ message: err.message });
@@ -109,4 +108,4 @@ const UpdatedefaultWallet = (async(req, res)=>{
 
 
 
-module.exports = {  GetPPDWallet, GetPPFWallet, GetPPEWallet, GetPPLWallet, GetUSDTWallet, UpdatedefaultWallet, GetDefaultWallet, UpdatedefaultWallet}
+module.exports = {  GetPPDWallet, GetPPFWallet, GetPPLWallet, GetUSDTWallet, UpdatedefaultWallet, GetDefaultWallet, UpdatedefaultWallet}

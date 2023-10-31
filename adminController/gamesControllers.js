@@ -4,11 +4,8 @@ const fetchPreviousCrashHistory = (async( req, res)=>{
 const dataEl = req.body
 
 // const crashHash = "6062e0e87b3c3beff3259d59b067da49551c44e6cf33565b38e929c0c21d212c";
-
-// Data to add
 let data = [];
 let currenthash = []
-
 
 const getCurrentHash = ((event)=>{
   const hash = crypto.createHmac("sha256", event).update(dataEl.salt).digest("hex");
@@ -19,7 +16,6 @@ const getCurrentHash = ((event)=>{
   let row = { hash: event, crashpoint: rounddown};
   currenthash.push(row)
 })
-
 
 function generateHash(seed) {
   return crypto.createHash("sha256").update(seed).digest("hex");
@@ -46,6 +42,7 @@ function getPreviousGames() {
   return previousGames;
 }
 
+
 setTimeout(()=>{
 res.status(200).json([...currenthash, ...data])
 }, 1000)
@@ -53,6 +50,7 @@ res.status(200).json([...currenthash, ...data])
 getPreviousGames()
   getCurrentHash(dataEl.hash)
 })
+
 
 const VerifyDice = (async(req, res)=>{
   const data = req.query

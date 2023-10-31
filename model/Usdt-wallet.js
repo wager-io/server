@@ -25,4 +25,4 @@ const Userschema = new schema({
     },
 }, { timestamp : true})
 
-module.exports = mongoose.model('btc_wallet', Userschema)
+module.exports = mongoose.model('usdt_wallet', Userschema)
