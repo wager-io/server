@@ -36,6 +36,7 @@ function createNums(allNums, hash) {
   return nums;
 }
 
+
 function main (serverSeed, clientSeed, nonce) {
   let resultArr = [clientSeed, nonce];
   let hmacSha256Result = crypto.createHmac("sha256", serverSeed).update(resultArr.join(":")).digest("hex")
