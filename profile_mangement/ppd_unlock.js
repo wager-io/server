@@ -1,5 +1,5 @@
-const PPDunlockDB = require("../model/ppd_unlock")
-const PPD_wallet = require("../model/PPD-wallet")
+const PPDunlockDB = require("../model/wgd_unlock")
+const PPD_wallet = require("../model/WGD-wallet")
 
 
 const handleCreatePPDunlocked = (async(user_id)=>{

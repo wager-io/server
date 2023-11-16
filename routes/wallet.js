@@ -4,12 +4,12 @@ const requireAuth = require('../middleware/requireAuth')
 
 // auth middleware
 router.use(requireAuth)
-const {  GetPPDWallet, GetPPFWallet, GetPPLWallet, GetUSDTWallet, GetDefaultWallet, UpdatedefaultWallet}  = require('../controller/walletControlers')
+const {  GetWGDWallet, GetWGFWallet, GetETHWallet, GetBTCWallet, GetDefaultWallet, UpdatedefaultWallet}  = require('../controller/walletControlers')
 
-router.get('/ppd-wallet', GetPPDWallet)
-router.get('/ppf-wallet', GetPPFWallet)
-router.get('/ppl-wallet', GetPPLWallet)
-router.get('/usdt-wallet', GetUSDTWallet)
+router.get('/ppd-wallet', GetWGDWallet)
+router.get('/ppf-wallet', GetWGFWallet)
+router.get('/ppl-wallet', GetETHWallet)
+router.get('/usdt-wallet', GetBTCWallet)
 router.get('/default-wallets', GetDefaultWallet)
 router.post('/update-default-wallets', UpdatedefaultWallet)
 

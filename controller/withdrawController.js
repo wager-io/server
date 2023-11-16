@@ -1,11 +1,11 @@
 const { axios } = require("axios");
-const USDTwallet = require("../model/Usdt-wallet")
+const USDTwallet = require("../model/ETH-wallet")
 const crypto = require("crypto");
 
 const CCPAYMENT_API_ID = "202310051818371709996528511463424";
 const CC_APP_SECRET = "206aed2f03af1b70305fb11319f2f57b";
 const CCPAYMENT_API_URL = "https://admin.ccpayment.com";
- 
+
 const now = new Date();
 const year = now.getFullYear();
 const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -45,13 +45,13 @@ const initiateWithdrawal = async (req, res) => {
       } else {
         
         let token_id;
-        if(data.network === "erc"){
+        if(data.network === "ERC20"){
           token_id = "264f4725-3cfd-4ff6-bc80-ff9d799d5fb2"
         }
-        else if(data.network === "trc"){
+        else if(data.network === "TRX20"){
           token_id = "0912e09a-d8e2-41d7-a0bc-a25530892988"
         }
-        else if(data.network === "bep"){
+        else if(data.network === "BEP20"){
           token_id = "92b15088-7973-4813-b0f3-1895588a5df7"
         }
 
@@ -90,8 +90,7 @@ const initiateWithdrawal = async (req, res) => {
           withdrawData,
           {
             headers: headers,
-          }
-        );
+          });
 
         if (response.data.msg === "success") {
               const newAmount = Number(userBalance) - Number(data.amount);

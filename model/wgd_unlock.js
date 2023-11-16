@@ -5,24 +5,19 @@ const Userschema = new schema({
     user_id: {
         type: String,
         required: true,
-        unique : true
     },
-    balance: {
+    locked: {
         type: Number,
         required: true,
     },
-    coin_image: {
-        type: String,
+    unlocked: {
+        type: Number,
         required: true,
     },
-    coin_fname: {
-        type: String,
+    progress: {
+        type: Number,
         required: true,
-    },
-    coin_name: {
-        type: String,
-        required: true,
-    },
+    }
 }, { timestamp : true})
 
-module.exports = mongoose.model('ppl_wallet', Userschema)
+module.exports = mongoose.model('wgd_unlock', Userschema)

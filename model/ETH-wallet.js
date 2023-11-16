@@ -5,31 +5,28 @@ const Userschema = new schema({
     user_id: {
         type: String,
         required: true,
+        unique : true
     },
-    server_seed: {
-        type: String,
-        required: true,
-    },
-    client_seed: {
-        type: String,
-        required: true,
-    },
-    hash_seed: {
-        type: String,
-        required: true,
-    },
-    nonce: {
+    balance: {
         type: Number,
         required: true,
     },
-    is_open: {
-        type: Boolean,
+    coin_image: {
+        type: String,
         required: true,
     },
-    updated_at: {
-        type: Date,
+    coin_fname: {
+        type: String,
+        required: true,
+    },
+    coin_name: {
+        type: String,
+        required: true,
+    },
+    is_active:{
+        type: Boolean,
         required: true,
     }
 }, { timestamp : true})
 
-module.exports = mongoose.model('dice_encryped_seed', Userschema)
+module.exports = mongoose.model('eth_wallet', Userschema)

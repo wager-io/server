@@ -1,5 +1,5 @@
 const CashBackDB = require("../model/cash_back")
-const PPDWallet = require("../model/PPD-wallet")
+const PPDWallet = require("../model/WGD-wallet")
 
 
 const Nextmonday = (()=>{

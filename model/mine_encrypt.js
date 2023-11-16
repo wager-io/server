@@ -32,4 +32,4 @@ const Userschema = new schema({
     }
 }, { timestamp : true})
 
-module.exports = mongoose.model('dice_encryped_seed', Userschema)
+module.exports = mongoose.model('mines_encryped_seed', Userschema)

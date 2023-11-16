@@ -1,7 +1,7 @@
 const { default: axios } = require("axios");
 const crypto = require("crypto");
 const DepositRequest = require("../model/deposit_request")
-const USDTwallet = require("../model/Usdt-wallet")
+const BTCwallet = require("../model/btc-wallet")
 const CCPAYMENT_API_ID = "202310051818371709996528511463424";
 const CC_APP_SECRET = "206aed2f03af1b70305fb11319f2f57b";
 const CCPAYMENT_API_URL = "https://admin.ccpayment.com";
@@ -75,9 +75,9 @@ const handleSuccessfulDeposit = (async(event)=>{
         status:event.status,
         contract: event.contract
       })
-    let resnj = await USDTwallet.find({user_id})
+    let resnj = await BTCwallet.find({user_id})
     let prev_bal = parseFloat(resnj[0].balance)
-  let result = await USDTwallet.updateOne({user_id}, {
+  let result = await BTCwallet.updateOne({user_id}, {
       balance:prev_bal + order_amount
     })
     console.log(result )
@@ -106,13 +106,13 @@ const initiateDeposit = async (req, res) => {
     const timestamp = Math.floor(Date.now() / 1000);
     let tokenid;
 
-    if(data.network === "erc"){
+    if(data.network === "ERC20"){
       tokenid = "264f4725-3cfd-4ff6-bc80-ff9d799d5fb2"
     }
-    else if(data.network === "trc"){
+    else if(data.network === "TRX20"){
       tokenid = "0912e09a-d8e2-41d7-a0bc-a25530892988"
     }
-    else if(data.network === "bep"){
+    else if(data.network === "BEP20"){
       tokenid = "92b15088-7973-4813-b0f3-1895588a5df7"
     }
     const merchant_order_id = Math.floor(Math.random()*100000) + 1000000;
@@ -201,9 +201,9 @@ const confirmDeposit = async () => {
   }
 }
 
-setInterval(() => {
-  confirmDeposit()
-}, 7200);
+// setInterval(() => {
+//   confirmDeposit()
+// }, 17000);
 
 
 const fetchPendingOrder = (async(req, res)=>{
@@ -216,5 +216,6 @@ const fetchPendingOrder = (async(req, res)=>{
       res.status(500).json(error)
     }
 })
+
 
 module.exports = { initiateDeposit, fetchPendingOrder }

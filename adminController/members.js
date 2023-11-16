@@ -142,7 +142,7 @@
 //             // ================ create default wallet details ===================
             
 //                 let balance = 20000.0000
-//                 let coin_image = "https://www.linkpicture.com/q/ppf_logo.png"
+//                 let coin_image = "https://res.cloudinary.com/dxwhz3r81/image/upload/v1697828376/ppf_logo_ntrqwg.png"
 //                 let coin_name = "PPF"
 //                 let created_at = currentTime
 //                 let hidden_from_public = 0

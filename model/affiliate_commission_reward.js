@@ -6,18 +6,26 @@ const Userschema = new schema({
         type: String,
         required: true,
     },
-    locked: {
+    crypto: {
+        type: String,
+        required: true,
+    },
+    amount: {
         type: Number,
         required: true,
     },
-    unlocked: {
-        type: Number,
+    status: {
+        type: String,
         required: true,
     },
-    progress: {
-        type: Number,
+    time: {
+        type: Date,
+        required: true,
+    },
+    is_consumed: {
+        type: Boolean,
         required: true,
     }
 }, { timestamp : true})
 
-module.exports = mongoose.model('ppd_unlock', Userschema)
+module.exports = mongoose.model('affiliate_commission_reward', Userschema)

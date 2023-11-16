@@ -3,22 +3,18 @@ const currentTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 const { handleWagerIncrease, handleProfileTransactions } = require("../profile_mangement/index")
 const crash_game = require("../model/crashgame")
 const Wallet = require("../model/wallet")
-const USDT_wallet = require("../model/Usdt-wallet")
-const PPFWallet = require("../model/PPF-wallet")
-const PPLWallet = require("../model/PPL-wallet")
+const BTC_wallet = require("../model/btc-wallet")
+const WGFWallet = require("../model/WGF-wallet")
 
 const updateUserWallet = (async(data)=>{
-  await Wallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount});
   if(data.bet_token_name === "WGF"){
-    await PPFWallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount });
+    await WGFWallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount});
   }
-  else if(data.bet_token_name === "BTC"){
-    await USDT_wallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount });
-  }
-  else if(data.bet_token_name === "ETH"){
-    await PPLWallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount });
+  else if(data.bet_token_name === "USDT"){
+    await BTC_wallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount});
   }
 })
+
 const CraeatBetGame = (async(data)=>{
   let bet = {
     user_id: data.user_id,
@@ -59,11 +55,10 @@ const CraeatBetGame = (async(data)=>{
   }
   handleProfileTransactions(trx_rec)
 try {
- let result = await crash_game.create(bet)
+  await crash_game.create(bet)
 } catch (err) {
   console.error(err);
 }
-
 })
 
 let hidden;

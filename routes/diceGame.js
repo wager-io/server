@@ -1,13 +1,13 @@
 const express = require('express')
 const router = express.Router()
 const requireAuth = require('../middleware/requireAuth')
-
 // auth middleware
 router.use(requireAuth)
-const { handleDiceBet, getDiceGameHistory, seedSettings } = require('../controller/diceControllers')
+const { handleDiceBet, getDiceGameHistory, seedSettings, handleDiceGameEncryption, HandlePlayDice } = require('../controller/diceControllers')
 
-router.post('/bet', handleDiceBet)
+router.post('/bet', HandlePlayDice)
 router.post('/seed-settings', seedSettings)
+router.get('/encrypt', handleDiceGameEncryption)
 router.get('/', getDiceGameHistory)
 
 module.exports = router

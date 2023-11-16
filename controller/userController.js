@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require("../model/User")
 const Profile = require("../model/Profile")
-const Wallet = require("../model/wallet")
 const { createProfile } = require("./profileControllers")
 var SECRET = `highscoretechBringwexsingthebestamoung23498hx93`
 const { format } = require('date-fns');
@@ -13,6 +12,7 @@ const { InitializeDiceGame } = require("../controller/diceControllers")
 const { CreateAffiliate, CheckValidity } = require("./affiliateControllers")
 const { handleCreatePPDunlocked } = require("../profile_mangement/ppd_unlock")
 const { handleNewNewlyRegisteredCount } = require("../profile_mangement/cashbacks")
+const { InitializeMinesGame } = require("../controller/minesControllers")
 const createToken = ((_id)=>{
    return  jwt.sign({_id}, SECRET, { expiresIn: '4d' })
 })
@@ -32,6 +32,7 @@ const CreateAccount = (async (req, res)=>{
     let provider =  (data.user.providerData[0].providerId)
     let invited_code = ""
     let username = data.user.displayName
+
     const fullData = {
         email, user_id, created_at, lastLoginAt, password, provider, emailVerified, google_auth,last_login_ip
     }
@@ -43,7 +44,11 @@ const CreateAccount = (async (req, res)=>{
         createEth(user_id)
         createwagerToken(user_id)
         createbtc(user_id)
+        InitializeMinesGame(user_id)
         InitializeDiceGame(user_id)
+        createCashbackTable(user_id)
+        handleCreatePPDunlocked(user_id)
+        CreateAffiliate(user_id)
         const Token = createToken(user_id)
         const default_wallet = await handleDefaultWallet(user_id)
         let result = await createProfile(email, username, invited_code, user_id )
@@ -52,6 +57,7 @@ const CreateAccount = (async (req, res)=>{
         catch(err){
            res.status(401).json({error: err})
         }
+
     }else{
         const result = await Profile.find({user_id})
         const default_wallet = await Wallet.find({user_id})
@@ -76,25 +82,71 @@ const Register = (async(req, res)=>{
     const fullData = {
         email, user_id, created_at, lastLoginAt, password, provider, emailVerified, google_auth,last_login_ip
     }
+    const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    function generateString(length) {
+        let result = '';
+        const charactersLength = characters.length;
+        for ( let i = 0; i < length; i++ ) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    }
+
+    let result = {
+        born: "-",
+        firstname: '-',
+        lastname: '-',
+        user_id: user_id,
+        email : email,  
+        hide_profile: false,
+        hidden_from_public: false,
+        refuse_friends_request: false,
+        refuse_tips: false, 
+        username : username ? username : generateString(9).toString(),  
+        profile_image: "https://img2.nanogames.io/avatar/head1.png",
+        vip_level: 0,
+        kyc_is_activated: false,
+        phone: "-",
+        next_level_point:1,
+        total_wagered: 0,
+        invited_code: invited_code ? invited_code : "-",
+        google_auth_is_activated : false,
+        is_suspend: false,
+        vip_progress: 0,
+        fa_is_activated: false,   
+        earn_me: 0,
+        commission_reward: 0,
+        usd_reward : 100, 
+        joined_at: currentTime,
+        account_type: "normal",
+        total_chat_messages:0,
+        weekly_wagered: 0,
+        monthly_wagered: 0
+    }
     if(invited_code){
         let validateCode = await CheckValidity(invited_code,user_id )
         if(validateCode){
             invited_code = validateCode
         }
+        
     }
     const exist = await User.findOne({ user_id })
     if(!exist){
         try{
-        await User.create(fullData)
-        createWGF(user_id)
-        createEth(user_id)
-        createwagerToken(user_id)
-        createbtc(user_id)
-        InitializeDiceGame(user_id)
-        const Token = createToken(user_id)
-        const default_wallet = await handleDefaultWallet(user_id)
-        let result = await createProfile(email, username, invited_code , user_id )
-            res.status(200).json({Token,default_wallet,result })
+            await User.create(fullData)
+            createWGF(user_id)
+            createEth(user_id)
+            createwagerToken(user_id)
+            createbtc(user_id)
+            InitializeMinesGame(user_id)
+            CreateAffiliate(user_id)
+            InitializeDiceGame(user_id)
+            createCashbackTable(user_id)
+            handleCreatePPDunlocked(user_id)
+            const Token = createToken(user_id)
+            let wallet =  handleDefaultWallet()
+            createProfile(result)
+            res.status(200).json({Token,wallet:wallet,result })
         }
         catch(err){
            res.status(401).json({error: err})
@@ -107,6 +159,7 @@ const Register = (async(req, res)=>{
     }
 })
 
+
 // get a user profile by id
 const SingleUserByID = (async(req, res)=>{
     const {id} = req.params;
@@ -118,6 +171,7 @@ const SingleUserByID = (async(req, res)=>{
         res.status(500).json({error})
     }
 })
+
 
 // ============= get previous messages ====================
 const previousChats = (async(req, res)=>{

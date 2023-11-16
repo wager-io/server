@@ -22,7 +22,11 @@ const Userschema = new schema({
     coin_name: {
         type: String,
         required: true,
+    },
+    is_active:{
+        type: Boolean,
+        required: true,
     }
 }, { timestamp : true})
 
-module.exports = mongoose.model('ppd_wallet', Userschema)
+module.exports = mongoose.model('btc_wallet', Userschema)

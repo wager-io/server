@@ -6,30 +6,38 @@ const Userschema = new schema({
         type: String,
         required: true,
     },
-    server_seed: {
+    transaction_type: {
         type: String,
         required: true,
     },
-    client_seed: {
+    token_img: {
         type: String,
         required: true,
     },
-    hash_seed: {
+    token_name: {
         type: String,
         required: true,
     },
-    nonce: {
+    balance: {
         type: Number,
         required: true,
     },
-    is_open: {
-        type: Boolean,
+    trx_amount: {
+        type: Number,
         required: true,
     },
-    updated_at: {
+    bill_id: {
+        type: Number,
+        required: true,
+    },
+    datetime: {
         type: Date,
+        required: true,
+    },
+    status: {
+        type: Boolean,
         required: true,
     }
 }, { timestamp : true})
 
-module.exports = mongoose.model('dice_encryped_seed', Userschema)
+module.exports = mongoose.model('bill', Userschema)
