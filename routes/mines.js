@@ -4,13 +4,13 @@ const requireAuth = require('../middleware/requireAuth')
 
 // auth middleware
 router.use(requireAuth)
-const { handleMinesBet, handleInitialze, handleMinesEncryption} = require('../controller/minesControllers')
+const { handleCashout, handleInitialze,handleHasLost,handleMinesHistory,  handleMinesEncryption, handleActiveMines} = require('../controller/minesControllers')
 
-router.post('/bet', handleMinesBet)
+router.post('/cashout', handleCashout)
+router.post('/lost-bet', handleHasLost)
 router.post('/mine-initialize', handleInitialze)
+router.get('/mine-history', handleMinesHistory)
+router.get('/mine-init', handleActiveMines)
 router.get('/mine-encrypt', handleMinesEncryption)
-
-// router.post('/seed-settings', seedSettings)
-// router.get('/', getDiceGameHistory)
 
 module.exports = router

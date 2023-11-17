@@ -1,8 +1,11 @@
 const crypto = require('crypto');
 const minesEncrypt = require("../model/mine_encrypt")
 const { format } = require('date-fns');
+const minesgameInit = require('../model/minesgameInit');
 const currentTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
-
+const WGFWallet = require("../model/WGF-wallet")
+const BTCWallet = require("../model/btc-wallet")
+const EthWallet = require("../model/ETH-wallet")
 const salt = 'Qede00000000000w00wd001bw4dc6a1e86083f95500b096231436e9b25cbdd0075c4';
 
 function getResult(hash) {
@@ -36,7 +39,6 @@ function createNums(allNums, hash) {
   return nums;
 }
 
-
 function main (serverSeed, clientSeed, nonce) {
   let resultArr = [clientSeed, nonce];
   let hmacSha256Result = crypto.createHmac("sha256", serverSeed).update(resultArr.join(":")).digest("hex")
@@ -45,112 +47,118 @@ function main (serverSeed, clientSeed, nonce) {
 } 
 
 const updateUserWallet = (async(data)=>{
-    await Wallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount });
-    if(data.bet_token_name === "WGF"){
-      await PPFWallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount });
+    if(data.coin_name === "WGF"){
+     await WGFWallet.updateOne({ user_id:data.user_id }, {balance: data.balance });
     }
-    else if(data.bet_token_name === "BTC"){
-      await USDTWallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount });
+    if(data.coin_name === "ETH"){
+      await EthWallet.updateOne({ user_id:data.user_id }, {balance: data.balance });
     }
-    else if(data.bet_token_name === "ETH"){
-      await Ethwallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount });
+    if(data.coin_name === "BTC"){
+      await BTCWallet.updateOne({ user_id:data.user_id }, {balance: data.balance });
     }
-  })
-  
-  
-  const handleMinesBet = (async(req,res)=>{
-      const {user_id} = req.id
-      let {sent_data} = req.body
+})
 
-      console.log(sent_data)
+const UpdateGameState = (async(data)=>{
+ await minesgameInit.updateOne({user_id: data.user_id,active: true },{
+  gamaLoop: data.gamaLoop,
+  active: false,
+  profit: data.profit,
+  cashout: data.cashout,
+  has_won:data.has_won,
+ })
+})
+
+const handleHasLost = (async(req, res)=>{
+    const { user_id } = req.id
+    const { data} = req.body
+    await minesgameInit.updateOne({user_id,active: true },{
+      gamaLoop: data.gameLoop,
+      active: false,
+      has_won: false,
+    }) 
+})
+
+const handleMinesHistory = (async(req, res)=>{
+  try{
+    const { user_id} = req.id
+    let sdff = await minesgameInit.find({user_id, active: false})
+    res.status(200).json(sdff)
+  }
+  catch(error){
+    res.status(500).json({error})
+  }
+})
+
   
-    //   const GetEncryptedSeeds = (async(user_id)=>{
-    //     const CraeatBetGame = (async(data)=>{
-    //       let bet = {
-    //         user_id: data.user_id,
-    //         username: data.username,
-    //         profile_img: data.user_img,
-    //         bet_amount: data.bet_amount,
-    //         token: data.bet_token_name,
-    //         token_img:data.bet_token_img,
-    //         bet_id: Math.floor(Math.random()*10000000)+ 72000000,
-    //         game_nonce: nonce,
-    //         cashout: parseFloat(data.io.point),
-    //         profit: data.payoutIO,
-    //         client_seed: data.io.client_seed,
-    //         server_seed: data.io.server_seed,
-    //         time: data.time,
-    //         hidden_from_public: data.hidden,
-    //         payout: data.payout,
-    //         has_won : data.has_won,
-    //         chance: data.chance
-    //       }
-    //       let wallet = {
-    //           coin_name: data.bet_token_name,
-    //           coin_image:  data.bet_token_img,
-    //           balance:  parseFloat(data.current_amount).toFixed(4),
-    //       }
-    //          let previusGame = await DiceGame.find({user_id})
-    //          let result = await DiceGame.create(bet)
-    //           res.status(200).json({history:[...previusGame, result], wallet,point: parseFloat(data.io.point)})
-    //       })
-  
-    //       let hidden;
-    //       let response =  await DiceEncription.find({user_id})
-    //       let server = response[response.length - 1].server_seed
-    //       let client = response[response.length - 1].client_seed
-    //       let hash = response[response.length - 1].hash_seed
-  
-    //       if(sent_data.bet_token_name !== "WGF"){
-    //         handleWagerIncrease(user_id, sent_data.bet_amount, sent_data.bet_token_img)
-    //       }
-  
-    //       const randomResult = generateRandomNumber(server, client, hash);
-    //         if(parseFloat(sent_data.chance) > parseFloat(randomResult.point)){
-    //           try {
-    //             let sjbhsj = await Wallet.find({user_id})
-    //             if(sjbhsj[0].hidden_from_public){
-    //                 hidden = true
-    //               }else{
-    //                 hidden = false
-    //             }
-    //               let previous_bal = parseFloat(sjbhsj[0].balance)
-    //               let wining_amount = parseFloat(sent_data.wining_amount)
-    //               let current_amount = (previous_bal + wining_amount).toFixed(4)
-    //             // updateUserWallet({current_amount, ...sent_data, user_id})
-    //             CraeatBetGame({...sent_data, user_id, payoutIO:wining_amount,hidden,  has_won : true, io: randomResult, current_amount})
-    //           } catch (err) {
-    //             res.status(501).json({ message: err.message });
-    //           }
-    //         }else{
-    //         try {
-    //           let response =  await Wallet.find({user_id})
-    //             if(response[0].hidden_from_public){
-    //               hidden = true
-    //             }else{
-    //               hidden = false
-    //             }
-    //           let previous_bal = parseFloat(response[0].balance)
-    //           let bet_amount = parseFloat(sent_data.bet_amount)
-    //           let current_amount = (previous_bal - bet_amount).toFixed(4)
-    //           CraeatBetGame({...sent_data, user_id,payoutIO:0,hidden, has_won : false, io: randomResult, current_amount})
-    //         //   updateUserWallet({current_amount, ...sent_data, user_id})
-    //         } catch (err) {
-    //           res.status(501).json({ message: err.message });
-    //         }
-    //       }
-    //   })
-    
-    // if(sent_data.bet_amount < 0.2){
-    //   res.status(501).json({ error:  "Minimum Bet amount for classic Dice is 0.20"});
-    // } 
-    // else if (sent_data.bet_amount > 5000){
-    //   res.status(501).json({ error:  "Minimum Bet amount for classic Dice is 5000"});
-    // } else{
-    //   GetEncryptedSeeds(user_id)
-    // }
+const handleCashout = (async(req,res)=>{
+  try{
+    const {user_id} = req.id
+    let {data} = req.body
+    let prev_bal;
+    if(data.bet_token_name === "ETH"){
+      prev_bal = await EthWallet.find({user_id})
+    }
+    if(data.bet_token_name === "BTC"){
+      prev_bal = await BTCWallet.find({user_id})
+    }
+    if(data.bet_token_name === "WGF"){
+      prev_bal = await WGFWallet.find({user_id})
+    }
+    let skjb = {
+      is_active: true,
+      balance: prev_bal[0].balance + data.profit ,
+      coin_image:data.bet_token_img, 
+      coin_name: data.bet_token_name
+  }
+  UpdateGameState({...data, user_id})
+   updateUserWallet({...skjb, user_id})
+   res.status(200).json({data,skjb}) 
+  }
+  catch(err){
+    console.log(err)
+  }
+})
+
+const UpdateEncrtip = (async(data)=>{
+  await minesEncrypt.updateOne({user_id:data.user_id},{
+    nonce:data.nonce
   })
-  
+})
+
+const handleActiveMines = (async(req, res)=>{
+  try{
+    const {user_id} = req.id
+   let jks = await minesgameInit.find({user_id,active: true })
+   res.status(200).json(jks)
+  }
+  catch(error){
+    res.status(500).json({error})
+  }
+})
+
+const handleMinesInit = (async(ev)=>{
+  try{
+    const liken = {
+      user_id: ev.user_id,
+      mine: ev.waskj[0].mines,
+      bet_amount:ev.waskj[0].bet_amount,
+      bet_token_name:ev.waskj[0].bet_token_name,
+      bet_token_img:ev.waskj[0].bet_token_img,
+      client_seed:ev.data.client_seed,
+      server_seed:ev.data.server_seed,
+      nonce:ev.data.nonce,
+      gameLoop:ev.daajs,
+      cashout: 0,
+      profit:0,
+      active: true,
+      has_won: false,
+      game_id: ev.game_id
+    }
+    await minesgameInit.create(liken)
+  }catch(error){
+    console.log(error)
+  }
+})
 
 const handleInitialze = (async(req, res)=>{
   try{
@@ -161,7 +169,38 @@ const handleInitialze = (async(req, res)=>{
     let client = data.client_seed
     let nonce = data.nonce
    let jjsk =  main(seed, client, nonce);
-    // res.status(200).json(mines)
+  
+   let mines = []
+   let daajs = []
+  for(let i = 0; i < data.mines; i++){
+    mines.push(jjsk[i])
+  }
+  for(let u = 1; u < 26; u++){
+    if(mines.includes(u)){
+      daajs.push({id:u, active: false, mine: true})
+    }else{
+      daajs.push({id:u, active: false, mine: false})
+    }
+  }
+  let game_id =  Math.floor(Math.random()* 10000000000)+ 10000000
+  let waskj = [
+    {
+      mines: data.mines,
+      bet_amount:data.bet_amount , 
+      bet_token_name:data.bet_token_name,
+      bet_token_img:data.bet_token_img
+  },
+  ]
+ let skjb = {
+    is_active: true,
+    balance: data.token_balance - data.bet_amount,
+    coin_image:data.bet_token_img, 
+    coin_name: data.bet_token_name
+}
+  updateUserWallet({...skjb, user_id})
+  UpdateEncrtip({nonce:data.nonce,user_id })
+   handleMinesInit({user_id, waskj, daajs, data, game_id })
+    res.status(200).json({daajs, waskj, skjb,nonce:data.nonce, game_id})
   }
   catch(error){
     console.log(error)
@@ -213,4 +252,4 @@ const handleHashGeneration = (()=>{
     }
       await minesEncrypt.create(data)
   })
-  module.exports = { handleMinesBet ,InitializeMinesGame, handleInitialze, handleMinesEncryption }
+  module.exports = {handleMinesHistory, handleCashout,handleHasLost, InitializeMinesGame, handleInitialze, handleMinesEncryption , handleActiveMines}
