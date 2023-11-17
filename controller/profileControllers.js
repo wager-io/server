@@ -63,11 +63,12 @@ const UpdateUser = (async(req, res)=>{
 
 
 const SingleUser = (async(req, res)=>{
+  try {
   const {user_id} = req.id;
     if (!user_id) {
       res.status(500).json({ error: "No user found" });
     } else {
-      try {
+     
         const users = await Profile.find({user_id})
         const usdt = await UsdtWallet.find({user_id})
         const ppf = await PPFWallet.find({user_id})
@@ -75,11 +76,11 @@ const SingleUser = (async(req, res)=>{
         const ppd = await PPDWallet.find({user_id})
         let wallet = [usdt[0], ppf[0], ppl[0], ppd[0]]
         res.status(200).json({users, wallet})
-      } catch (err) {
-        res.status(501).json({ message: err.message });
-        console.log(err)
-      }
     }
+  } catch (err) {
+    res.status(501).json({ message: err.message });
+    console.log(err)
+  }
 })
 
 
@@ -99,9 +100,10 @@ const handleHiddenProfile = (async(req, res)=>{
 
 
 const handleRefusefriendRequest = (async(req, res)=>{
-  const {user_id} = req.id
-  const { profile_state } = req.body
   try{
+    const {user_id} = req.id
+    const { profile_state } = req.body
+
     let response = await Profile.updateOne({user_id},{
       refuse_friends_request: profile_state
     })
@@ -113,9 +115,10 @@ const handleRefusefriendRequest = (async(req, res)=>{
 })
 
 const handleRefuseTip = (async(req, res)=>{
+  try{
   const {user_id} = req.id
   const { profile_state } = req.body
-  try{
+
     let response = await Profile.updateOne({user_id},{
       refuse_tips: profile_state
     })
@@ -127,9 +130,10 @@ const handleRefuseTip = (async(req, res)=>{
 })
 
 const handlePublicUsername = (async(req, res)=>{
+  try{
   const {user_id} = req.id
   const { profile_state } = req.body
-  try{
+
     await Profile.updateOne({user_id},{
       hidden_from_public: profile_state
     })
@@ -153,8 +157,8 @@ const handlePublicUsername = (async(req, res)=>{
 })
 
 const handleDailyPPFbonus =  (async(req, res)=>{
-  const {user_id} = req.id
   try{
+  const {user_id} = req.id
     let result = await PPFWallet.find({user_id})
     let prev_bal = result[0].balance
     let pre_date = result[0].date
@@ -189,7 +193,6 @@ const handleDailyPPFbonus =  (async(req, res)=>{
   catch(err){
     res.status(500).json({error: err})
   }
-
 })
 
 module.exports = { SingleUser, UpdateUser, UpdateProfile,handleHiddenProfile , handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus, createProfile }

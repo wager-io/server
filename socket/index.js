@@ -14,8 +14,8 @@ let maxRange = 100
 async function createsocket(httpServer){
 const io = new Server(httpServer, {
     cors: {
-        origin:"https://wager.services"
-        // origin: "http://localhost:5173"
+        // origin:"https://wager.services"
+        origin: "http://localhost:5173"
     },
 });
 
@@ -151,11 +151,13 @@ const handleDicePoints = ((e)=>{
 })
 
 
+
 let newMessage = await Chats.find()
 const handleNewChatMessages = (async(data)=>{
     io.emit("new-messages", newMessage)
   await Chats.create(data)
 })
+
 
 
 io.on("connection", (socket)=>{
