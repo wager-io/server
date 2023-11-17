@@ -167,7 +167,6 @@ io.on("connection", (socket)=>{
         newMessage.push(data)
         handleNewChatMessages(data)
     })
-
     socket.on("disconnect", ()=>{
         console.log("disconnected")
     })

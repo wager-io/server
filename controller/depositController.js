@@ -2,12 +2,46 @@ const { default: axios } = require("axios");
 const crypto = require("crypto");
 const DepositRequest = require("../model/deposit_request")
 const BTCwallet = require("../model/btc-wallet")
-const CCPAYMENT_API_ID = "202310051818371709996528511463424";
-const CC_APP_SECRET = "206aed2f03af1b70305fb11319f2f57b";
+const ETHwallet = require("../model/ETH-wallet")
+const CCPAYMENT_API_ID = "202311171454381725527873837211648";
+const CC_APP_SECRET = "75b33dba9ee7a51b3c4188baa9124cbe";
 const CCPAYMENT_API_URL = "https://admin.ccpayment.com";
 const { handleProfileTransactions } = require("../profile_mangement/index")
 const { handlePPDunLockUpdate } = require("../profile_mangement/ppd_unlock")
 const { handleTotalNewDepsitCount } = require("../profile_mangement/cashbacks")
+
+
+// Function to get the current BTC to USD exchange rate
+async function getExchangeRate() {
+  try {
+    const response = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
+      params: {
+        ids: 'bitcoin',
+        vs_currencies: 'usd',
+      },
+    });
+    return response.data.bitcoin.usd;
+  } catch (error) {
+    console.error('Error fetching exchange rate:', error.message);
+    return null;
+  }
+}
+
+async function getExchangeRateETH() {
+  try {
+    const response = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
+      params: {
+        ids: 'ethereum',
+        vs_currencies: 'usd',
+      },
+    });
+    return response.data.bitcoin.usd;
+  } catch (error) {
+    console.error('Error fetching exchange rate:', error.message);
+    return null;
+  }
+}
+
 
 const RequestTransaction = (async(event)=>{
   // Get the current date and time
@@ -70,17 +104,24 @@ const handleSuccessfulDeposit = (async(event)=>{
     let eyyn = await DepositRequest.find({merchant_order_id:event.merchant_order_id })
     let user_id = eyyn[0].user_id
     let order_amount = parseFloat(eyyn[0].amount)
-      // handleFirstDeposit(user_id, order_amount, data.length)
-      await DepositRequest.updateOne({user_id, merchant_order_id: event.merchant_order_id }, {
-        status:event.status,
-        contract: event.contract
-      })
-    let resnj = await BTCwallet.find({user_id})
-    let prev_bal = parseFloat(resnj[0].balance)
-  let result = await BTCwallet.updateOne({user_id}, {
-      balance:prev_bal + order_amount
+    await DepositRequest.updateOne({user_id, merchant_order_id: event.merchant_order_id }, {
+      status:event.status,
+      contract: event.contract
     })
-    console.log(result )
+    if(eyyn[0].crypto === "BTC"){
+      let resnj = await BTCwallet.find({user_id})
+      let prev_bal = parseFloat(resnj[0].balance)
+      await BTCwallet.updateOne({user_id}, {
+        balance:prev_bal + order_amount
+      })
+    }
+    if(eyyn[0].crypto === "ETH"){
+      let resnj = await ETHwallet.find({user_id})
+      let prev_bal = parseFloat(resnj[0].balance)
+      await ETHwallet.updateOne({user_id}, {
+        balance:prev_bal + order_amount
+      })
+    }
 })
 
 const handleFailedTransaction = (async(event)=>{
@@ -106,21 +147,48 @@ const initiateDeposit = async (req, res) => {
     const timestamp = Math.floor(Date.now() / 1000);
     let tokenid;
 
-    if(data.network === "ERC20"){
-      tokenid = "264f4725-3cfd-4ff6-bc80-ff9d799d5fb2"
+    // Function to convert BTC to USD using the current exchange rate
+    const convertBTCtoUSD = async(btcAmount)=> {
+      const exchangeRate = await getExchangeRate();
+      if (exchangeRate !== null) {
+        // console.log(`${btcAmount} BTC is equal to ${btcAmount * exchangeRate} USD.`);
+       return  btcAmount * exchangeRate;
+      } else {
+        console.log('Unable to fetch the exchange rate. Please try again later.');
+      }
+  }
+
+      // Function to convert BTC to USD using the current exchange rate
+    const convertETHtoUSD = async(ethAmount)=> {
+        const exchangeRate = await getExchangeRateETH();
+        if (exchangeRate !== null) {
+          // console.log(`${btcAmount} BTC is equal to ${btcAmount * exchangeRate} USD.`);
+         return  btcAmount * exchangeRate;
+        } else {
+          console.log('Unable to fetch the exchange rate. Please try again later.');
+        }
     }
-    else if(data.network === "TRX20"){
-      tokenid = "0912e09a-d8e2-41d7-a0bc-a25530892988"
-    }
-    else if(data.network === "BEP20"){
-      tokenid = "92b15088-7973-4813-b0f3-1895588a5df7"
-    }
+
+ let deposiit_amount 
+
+  let details = data.details
+  if(details.coin_name === "BTC"){
+    tokenid = 'f36ad1cf-222a-4933-9ad0-86df8069f916'
+    let ions =  await convertBTCtoUSD(data.amount)
+    deposiit_amount = (parseFloat(ions)).toFixed(2)
+  }
+  if(details.coin_name === "ETH"){
+    tokenid = '8addd19b-37df-4faf-bd74-e61e214b008a'
+    let ions =  await convertETHtoUSD(data.amount)
+    deposiit_amount = (parseFloat(ions)).toFixed(2)
+  }
+
     const merchant_order_id = Math.floor(Math.random()*100000) + 1000000;
     const currency = "USD";
     const paymentData = {
       remark: transaction_type,
       token_id : tokenid,
-      product_price: data.amount.toString(),
+      product_price: deposiit_amount.toString(),
       merchant_order_id:merchant_order_id.toString(),
       denominated_currency: currency,
       order_valid_period: 43200,
@@ -156,7 +224,6 @@ const confirmDeposit = async () => {
     let usersID = []
     let deoop = await DepositRequest.find()
     if(deoop > 0){
-
       deoop.forEach(element => {
         if(element.status === "Pending"){
           usersID.push(element.merchant_order_id)
@@ -182,7 +249,6 @@ const confirmDeposit = async () => {
           headers: headers,
         }
       );
-
       let result = response.data.data
       if(usersID.length > 0){
         result.forEach(element => {
@@ -201,9 +267,9 @@ const confirmDeposit = async () => {
   }
 }
 
-// setInterval(() => {
-//   confirmDeposit()
-// }, 17000);
+setInterval(() => {
+  confirmDeposit()
+}, 17000);
 
 
 const fetchPendingOrder = (async(req, res)=>{
