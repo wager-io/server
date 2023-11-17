@@ -69,6 +69,7 @@ const UpdateGameState = (async(data)=>{
 })
 
 const handleHasLost = (async(req, res)=>{
+  try{
     const { user_id } = req.id
     const { data} = req.body
     await minesgameInit.updateOne({user_id,active: true },{
@@ -76,6 +77,12 @@ const handleHasLost = (async(req, res)=>{
       active: false,
       has_won: false,
     }) 
+    res.status(200).json({message: "Mine lost"})
+  }
+  catch(error){
+    res.status(500).json({error})
+  }
+
 })
 
 const handleMinesHistory = (async(req, res)=>{
