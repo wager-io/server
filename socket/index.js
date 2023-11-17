@@ -158,8 +158,6 @@ const handleNewChatMessages = (async(data)=>{
   await Chats.create(data)
 })
 
-
-
 io.on("connection", (socket)=>{
     socket.on("dice-bet", data=>{
         handleDicePoints(data)
