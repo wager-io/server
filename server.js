@@ -20,6 +20,7 @@ const { createServer } = require("node:http");
 require("dotenv").config();
 // ============ Initilize the app ========================
 
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -54,6 +55,7 @@ mongoose.set('strictQuery', false);
 
 // connect database
 // const dbUri = `mongodb://localhost:27017/wager`
+
 const dbUri = `mongodb+srv://valiantjoe:jspW8bJDiu5lnvc4@highscore.muku4gg.mongodb.net/wager?retryWrites=true&w=majority`
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))
