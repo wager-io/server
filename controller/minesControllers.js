@@ -46,6 +46,22 @@ function main (serverSeed, clientSeed, nonce) {
   return (resultList);
 } 
 
+const UpdateWins = (async(req, res)=>{
+    try{
+      const { user_id } = req.id
+      const { data } = req.body
+     await minesgameInit.updateOne({user_id, active: true },{
+        gameLoop: data
+      })
+      // let sdff = await minesgameInit.find({user_id, active: true})
+      // console.log(sdff)
+      res.status(200).json({message: "Game saved"})
+    }
+    catch(error){
+      res.status(500).json({message: error})
+    }
+})
+
 const updateUserWallet = (async(data)=>{
     if(data.coin_name === "WGF"){
      await WGFWallet.updateOne({ user_id:data.user_id }, {balance: data.balance });
@@ -82,7 +98,6 @@ const handleHasLost = (async(req, res)=>{
   catch(error){
     res.status(500).json({error})
   }
-
 })
 
 const handleMinesHistory = (async(req, res)=>{
@@ -259,4 +274,4 @@ const handleHashGeneration = (()=>{
     }
       await minesEncrypt.create(data)
   })
-  module.exports = {handleMinesHistory, handleCashout,handleHasLost, InitializeMinesGame, handleInitialze, handleMinesEncryption , handleActiveMines}
+  module.exports = {handleMinesHistory, handleCashout,handleHasLost,UpdateWins, InitializeMinesGame, handleInitialze, handleMinesEncryption , handleActiveMines}
