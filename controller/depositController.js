@@ -267,10 +267,6 @@ const confirmDeposit = async () => {
   }
 }
 
-setInterval(() => {
-  confirmDeposit()
-}, 17000);
-
 
 const fetchPendingOrder = (async(req, res)=>{
     const {user_id} = req.id
@@ -284,4 +280,4 @@ const fetchPendingOrder = (async(req, res)=>{
 })
 
 
-module.exports = { initiateDeposit, fetchPendingOrder }
+module.exports = { initiateDeposit, fetchPendingOrder , confirmDeposit}

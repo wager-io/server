@@ -95,7 +95,7 @@ const UpdatedefaultWallet = (async(req, res)=>{
   const {user_id} = req.id;
   const data = req.body
   try {
- await BTCWallet.updateOne({ user_id }, {
+    await BTCWallet.updateOne({ user_id }, {
     is_active: data.coin_name === "BTC" ? true : false
    });
 
@@ -108,11 +108,10 @@ const UpdatedefaultWallet = (async(req, res)=>{
    });
    await ETHWallet.updateOne({ user_id }, {
     is_active: data.coin_name === "ETH" ? true : false
-   });
+   })
 
   } catch (err) {
     res.status(501).json({ message: err.message });
-  }
-})
+}})
 
 module.exports = {  GetWGDWallet, GetWGFWallet, GetETHWallet, GetBTCWallet, UpdatedefaultWallet, GetDefaultWallet, UpdatedefaultWallet}

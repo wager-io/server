@@ -6,6 +6,14 @@ const Userschema = new schema({
         type: String,
         required: true,
     },
+    username: {
+        type: String,
+        required: true,
+    },
+    profile_img: {
+        type: String,
+        required: true,
+    },
     game_id: {
         type: Number,
         required: true,
@@ -57,7 +65,23 @@ const Userschema = new schema({
     profit:{
         type: Number,
         required: true,
+    },
+    time:{
+        type: Date,
+        required: true,
     }
 }, { timestamp : true})
 
 module.exports = mongoose.model('mines_game_init', Userschema)
+
+
+
+
+
+
+
+
+
+
+
+
