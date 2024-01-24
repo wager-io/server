@@ -116,7 +116,7 @@ const handleTip = async (data) => {
 async function createsocket(httpServer) {
   const io = new Server(httpServer, {
     cors: {
-      origin: ["https://wager.services","http://localhost:5173","http://localhost:5174" ]
+      origin: ["https://wager.services","http://localhost:5173","http://localhost:5174" , "https://wager-administration.netlify.app"]
     },
   });
 
