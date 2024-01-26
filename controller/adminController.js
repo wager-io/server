@@ -31,6 +31,10 @@ const { getTodayAndTomorrowsDate, today } = require("../utils/time");
 const AffiliateCodes = require("../model/affiliate_codes");
 const FlashDrop = require('../model/flashdrop');
 const { createNotify } = require("./notify");
+
+
+
+
 // Create Member controller
 const createMember = async (req, res, next) => {
     try {
@@ -142,6 +146,8 @@ const createMember = async (req, res, next) => {
         return res.status(500).json({ message: err.message });
     }
 }
+
+
 //Get Members List
 const getAllMembers = async (req, res, next) => {
     try {
@@ -209,6 +215,7 @@ const getAllMembers = async (req, res, next) => {
     }
 
 }
+
 //Dashboard API 
 const adminDashbaord = async (req, res, next) => {
     try {
@@ -247,13 +254,10 @@ const adminDashbaord = async (req, res, next) => {
         })
 
         //Total Won from all Games
-
         const totalWon = await totalGamesWon()
-
         //Total Loss from all Games
 
         const totalLoss = await totalGamesLoss()
-
         return res.status(200).json({
             success: true,
             data: {
@@ -270,6 +274,7 @@ const adminDashbaord = async (req, res, next) => {
         console.log(err)
     }
 }
+
 //FIND USER BY ID
 const findUserById = async (req, res, next) => {
     try {
@@ -292,6 +297,7 @@ const findUserById = async (req, res, next) => {
         return res.status(500).json({ message: err.message });
     }
 }
+
 //GET BY USERNAME
 const findUserByUsername = async (req, res, next) => {
     try {
@@ -314,6 +320,7 @@ const findUserByUsername = async (req, res, next) => {
         return res.status(500).json({ message: err.message });
     }
 }
+
 //Get User STATS 
 const registeredUserstats = async (req, res, next) => {
     // const today = new Date()
@@ -626,7 +633,6 @@ const dailyReport = async (req, res, next) => {
 
         const distinctDates = [...userDate, ...DepositDate, ...WithdrawalHistoryDate, ...LotteryDate, ...CashBackDate, ...crashDate, ...diceDate, ...minesDate];
         const uniqueDate = [...new Set(distinctDates.map(date => date.toISOString().split('T')[0]))]
-        console.log(uniqueDate);
 
         const { date } = req.body
         let todayDate = ''
@@ -637,8 +643,6 @@ const dailyReport = async (req, res, next) => {
             todayDate = dateD.todayDate
             tomorrowDate = dateD.tomorrowDate
 
-
-            console.log(todayDate, tomorrowDate)
             const users = await User.find({
                 created_at: {
                     $gte: new Date(todayDate),
@@ -676,13 +680,13 @@ const dailyReport = async (req, res, next) => {
             const dailyLotterys = await dailyLottery(todayDate, tomorrowDate)
             let totalDirectRefferal = 0;
 
-
             const direct_refferal = await AffiliateCodes.find({
                 created_at: {
                     $gte: new Date(todayDate),
                     $lt: new Date(tomorrowDate)
                 }
             })
+
             if (direct_refferal.length > 0) {
                 let refferal = direct_refferal.map((alliffiliateCode) => {
                     return alliffiliateCode.available_usd_reward
@@ -768,7 +772,6 @@ const gameReport = async (req, res, next) => {
             todayDate = dateD.todayDate
             tomorrowDate = dateD.tomorrowDate
         }
-        console.log(todayDate, tomorrowDate)
         // Daily Total Wagered Across all Games
         const crashDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'crashgame')
         const diceDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'dicegame')
@@ -862,7 +865,6 @@ const ggrReport = async (req, res, next) => {
             todayDate = dateD.todayDate
             tomorrowDate = dateD.tomorrowDate
         }
-        console.log(todayDate, tomorrowDate)
 
         const profile = await Profile.find()
         if (profile.length <= 0) {
@@ -902,7 +904,6 @@ const ggrReport = async (req, res, next) => {
 
 }
 
-
 //Create FlashDrops
 const createFlashDrop = async (req, res) => {
     try {
@@ -926,6 +927,7 @@ const createFlashDrop = async (req, res) => {
     }
 
 }
+
 
 module.exports = {
     createMember,

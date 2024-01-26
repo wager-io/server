@@ -40,7 +40,7 @@ const getGGR = async (user_id) => {
 
             const crashGame = await CrashGame.find({ user_id: user_id, has_won: false })
             if (crashGame.length > 0) {
-                crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+                crashGameTotalStake = crashGame.filter(game => game.token !== 'WGF').map(game => {
                     return game.bet_amount
                 })
                 if (crashGameTotalStake.length > 0) {
@@ -52,7 +52,7 @@ const getGGR = async (user_id) => {
             //Get Number of Dice Game Loss Amount
             const diceGame = await DiceGame.find({ user_id: user_id, has_won: false })
             if (diceGame.length > 0) {
-                diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+                diceGameTotalStake = diceGame.filter(game => game.token !== 'WGF').map(game => {
                     return game.bet_amount
                 })
                 if (diceGameTotalStake.length > 0) {
@@ -64,7 +64,7 @@ const getGGR = async (user_id) => {
             //Get Number of Mines Game Loss Amount
             const minesGame = await MinesGame.find({ user_id: user_id, has_won: false })
             if (minesGame.length > 0) {
-                minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+                minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'WGF').map(game => {
                     return game.bet_amount
                 })
                 if (minesGameTotalStake.length > 0) {
@@ -79,7 +79,7 @@ const getGGR = async (user_id) => {
             //Get Number of Crash Game Loss Amount
             const crashGame = await CrashGame.find({ has_won: false })
             if (crashGame.length > 0) {
-                crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+                crashGameTotalStake = crashGame.filter(game => game.token !== 'WGF').map(game => {
                     return game.bet_amount
                 })
                 if (crashGameTotalStake.length > 0) {
@@ -91,7 +91,7 @@ const getGGR = async (user_id) => {
             //Get Number of Dice Game Loss Amount
             const diceGame = await DiceGame.find({ has_won: false })
             if (diceGame.length > 0) {
-                diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+                diceGameTotalStake = diceGame.filter(game => game.token !== 'WGF').map(game => {
                     return game.bet_amount
                 })
                 if (diceGameTotalStake.length > 0) {
@@ -102,7 +102,7 @@ const getGGR = async (user_id) => {
             //Get Number of Mines Game Loss Amount
             const minesGame = await MinesGame.find({ has_won: false })
             if (minesGame.length > 0) {
-                minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+                minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'WGF').map(game => {
                     return game.bet_amount
                 })
                 if (minesGameTotalStake.length > 0) {
@@ -187,7 +187,7 @@ const totalGamesWon = async (today, tomorrow) => {
                 }, has_won: true
             })
             if (crashGame.length > 0) {
-                crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+                crashGameTotalStake = crashGame.filter(game => game.token !== 'WGF').map(game => {
                     return game.profit
                 })
                 if (crashGameTotalStake.length > 0) {
@@ -204,7 +204,7 @@ const totalGamesWon = async (today, tomorrow) => {
             })
 
             if (diceGame.length > 0) {
-                diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+                diceGameTotalStake = diceGame.filter(game => game.token !== 'WGF').map(game => {
                     return game.profit
                 })
                 if (diceGameTotalStake.length > 0) {
@@ -221,7 +221,7 @@ const totalGamesWon = async (today, tomorrow) => {
             })
 
             if (minesGame.length > 0) {
-                minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+                minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'WGF').map(game => {
                     return game.profit
                 })
                 if (minesGameTotalStake.length > 0) {
@@ -234,7 +234,7 @@ const totalGamesWon = async (today, tomorrow) => {
             //Get Number of Crash Game Won Amount
             const crashGame = await CrashGame.find({ has_won: true })
             if (crashGame.length > 0) {
-                crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+                crashGameTotalStake = crashGame.filter(game => game.token !== 'WGF').map(game => {
                     return game.profit
                 })
                 if (crashGameTotalStake.length > 0) {
@@ -245,7 +245,7 @@ const totalGamesWon = async (today, tomorrow) => {
             //Get Number of Dice Game Won Amount
             const diceGame = await DiceGame.find({ has_won: true })
             if (diceGame.length > 0) {
-                diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+                diceGameTotalStake = diceGame.filter(game => game.token !== 'WGF').map(game => {
                     return game.profit
                 })
                 if (diceGameTotalStake.length > 0) {
@@ -256,7 +256,7 @@ const totalGamesWon = async (today, tomorrow) => {
             //Get Number of Mines Game Won Amount
             const minesGame = await MinesGame.find({ has_won: true })
             if (minesGame.length > 0) {
-                minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+                minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'WGF').map(game => {
                     return game.profit
                 })
                 if (minesGameTotalStake.length > 0) {
@@ -284,7 +284,7 @@ const totalGamesLoss = async () => {
     //Get Number of Crash Game Won Amount
     const crashGame = await CrashGame.find({ has_won: false })
     if (crashGame.length > 0) {
-        crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+        crashGameTotalStake = crashGame.filter(game => game.token !== 'WGF').map(game => {
             return game.bet_amount
         })
         if (crashGameTotalStake.length > 0) {
@@ -295,7 +295,7 @@ const totalGamesLoss = async () => {
     //Get Number of Dice Game Won Amount
     const diceGame = await DiceGame.find({ has_won: false })
     if (diceGame.length > 0) {
-        diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+        diceGameTotalStake = diceGame.filter(game => game.token !== 'WGF').map(game => {
             return game.bet_amount
         })
         if (diceGameTotalStake.length > 0) {
@@ -307,7 +307,7 @@ const totalGamesLoss = async () => {
     //Get Number of Mines Game Won Amount
     const minesGame = await MinesGame.find({ has_won: false })
     if (minesGame.length > 0) {
-        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'WGF').map(game => {
             return game.bet_amount
         })
         if (minesGameTotalStake.length > 0) {
@@ -341,7 +341,7 @@ const totalWageredByMonth = async () => {
     //Get Number of Crash Game Won Amount
     const crashGame = await CrashGame.find()
     if (crashGame.length > 0) {
-        crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+        crashGameTotalStake = crashGame.filter(game => game.token !== 'WGF').map(game => {
             return {
                 bet_amount: game.bet_amount,
                 month: new Date(game.time).getMonth() + 1
@@ -352,7 +352,7 @@ const totalWageredByMonth = async () => {
     //Get Number of Dice Game Won Amount
     const diceGame = await DiceGame.find()
     if (diceGame.length > 0) {
-        diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+        diceGameTotalStake = diceGame.filter(game => game.token !== 'WGF').map(game => {
             return {
                 bet_amount: game.bet_amount,
                 month: new Date(game.time).getMonth() + 1
@@ -363,7 +363,7 @@ const totalWageredByMonth = async () => {
     //Get Number of Mines Game Won Amount
     const minesGame = await MinesGame.find()
     if (minesGame.length > 0) {
-        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'WGF').map(game => {
             return {
                 bet_amount: game.bet_amount,
                 month: new Date(game.time).getMonth() + 1
@@ -421,7 +421,7 @@ const totalWonByMonth = async () => {
     //Get Number of Crash Game Won Amount
     const crashGame = await CrashGame.find({ has_won: true })
     if (crashGame.length > 0) {
-        crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+        crashGameTotalStake = crashGame.filter(game => game.token !== 'WGF').map(game => {
             return {
                 profit: game.profit,
                 month: new Date(game.time).getMonth() + 1
@@ -432,7 +432,7 @@ const totalWonByMonth = async () => {
     //Get Number of Dice Game Won Amount
     const diceGame = await DiceGame.find({ has_won: true })
     if (diceGame.length > 0) {
-        diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+        diceGameTotalStake = diceGame.filter(game => game.token !== 'WGF').map(game => {
             return {
                 profit: game.profit,
                 month: new Date(game.time).getMonth() + 1
@@ -443,7 +443,7 @@ const totalWonByMonth = async () => {
     //Get Number of Mines Game Won Amount
     const minesGame = await MinesGame.find({ has_won: true })
     if (minesGame.length > 0) {
-        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'WGF').map(game => {
             return {
                 profit: game.profit,
                 month: new Date(game.time).getMonth() + 1
@@ -494,7 +494,7 @@ const userWon = async (user_id) => {
     // //Get Number of Crash Game Won Amount
     const crashGame = await CrashGame.find({ user_id: user_id, has_won: true })
     if (crashGame.length > 0) {
-        crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+        crashGameTotalStake = crashGame.filter(game => game.token !== 'WGF').map(game => {
             return game.profit
         })
         if (crashGameTotalStake.length > 0) {
@@ -505,7 +505,7 @@ const userWon = async (user_id) => {
     // //Get Number of Dice Game Won Amount
     const diceGame = await DiceGame.find({ user_id: user_id, has_won: true })
     if (diceGame.length > 0) {
-        diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+        diceGameTotalStake = diceGame.filter(game => game.token !== 'WGF').map(game => {
             return game.profit
         })
         if (diceGameTotalStake.length > 0) {
@@ -516,7 +516,7 @@ const userWon = async (user_id) => {
     // //Get Number of Mines Game Won Amount
     const minesGame = await MinesGame.find({ user_id: user_id, has_won: true })
     if (minesGame.length > 0) {
-        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'WGF').map(game => {
             return game.profit
         })
         if (minesGameTotalStake.length > 0) {
@@ -541,7 +541,7 @@ const userLoss = async (user_id) => {
     // //Get Number of Crash Game Won Amount
     const crashGame = await CrashGame.find({ user_id: user_id, has_won: false })
     if (crashGame.length > 0) {
-        crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+        crashGameTotalStake = crashGame.filter(game => game.token !== 'WGF').map(game => {
             return game.bet_amount
         })
         if (crashGameTotalStake.length > 0) {
@@ -552,7 +552,7 @@ const userLoss = async (user_id) => {
     // //Get Number of Dice Game Won Amount
     const diceGame = await DiceGame.find({ user_id: user_id, has_won: false })
     if (diceGame.length > 0) {
-        diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+        diceGameTotalStake = diceGame.filter(game => game.token !== 'WGF').map(game => {
             return game.bet_amount
         })
         if (diceGameTotalStake.length > 0) {
@@ -563,7 +563,7 @@ const userLoss = async (user_id) => {
     // //Get Number of Mines Game Won Amount
     const minesGame = await MinesGame.find({ user_id: user_id, has_won: false })
     if (minesGame.length > 0) {
-        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'WGF').map(game => {
             return game.bet_amount
         })
         if (minesGameTotalStake.length > 0) {
@@ -599,7 +599,7 @@ const dailyTotalWagered = async (from, to, type) => {
         })
         if (crashGame.length > 0) {
             crashGameTotalStake = crashGame.map((game) => {
-                if (game.token !== 'PPF') {
+                if (game.token !== 'WGF') {
                     return game.bet_amount
                 }
             })
@@ -617,7 +617,7 @@ const dailyTotalWagered = async (from, to, type) => {
         })
         if (diceGame.length > 0) {
             diceGameTotalStake = diceGame.map((game) => {
-                if (game.token !== 'PPF') {
+                if (game.token !== 'WGF') {
                     return game.bet_amount
                 }
             })
@@ -634,7 +634,7 @@ const dailyTotalWagered = async (from, to, type) => {
         })
         if (minesGame.length > 0) {
             minesGameTotalStake = minesGame.map((game) => {
-                if (game.bet_token_name !== 'PPF') {
+                if (game.bet_token_name !== 'WGF') {
                     return game.bet_amount
                 }
             })
@@ -660,7 +660,7 @@ const dailyTotalWagered = async (from, to, type) => {
             })
             if (crashGame.length > 0) {
                 crashGameTotalStake = crashGame.map((game) => {
-                    if (game.token !== 'PPF') {
+                    if (game.token !== 'WGF') {
                         return game.bet_amount
                     }
                 })
@@ -678,7 +678,7 @@ const dailyTotalWagered = async (from, to, type) => {
             })
             if (diceGame.length > 0) {
                 diceGameTotalStake = diceGame.map((game) => {
-                    if (game.token !== 'PPF') {
+                    if (game.token !== 'WGF') {
                         return game.bet_amount
                     }
                 })
@@ -696,7 +696,7 @@ const dailyTotalWagered = async (from, to, type) => {
             })
             if (minesGame.length > 0) {
                 minesGameTotalStake = minesGame.map((game) => {
-                    if (game.bet_token_name !== 'PPF') {
+                    if (game.bet_token_name !== 'WGF') {
                         return game.bet_amount
                     }
                 })
@@ -722,7 +722,7 @@ const dailyGamesWon = async (today, tomorrow, type) => {
             }, has_won: true
         })
         if (crashGame.length > 0) {
-            crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+            crashGameTotalStake = crashGame.filter(game => game.token !== 'WGF').map(game => {
                 return game.profit
             })
             if (crashGameTotalStake.length > 0) {
@@ -740,7 +740,7 @@ const dailyGamesWon = async (today, tomorrow, type) => {
             }, has_won: true
         })
         if (diceGame.length > 0) {
-            diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+            diceGameTotalStake = diceGame.filter(game => game.token !== 'WGF').map(game => {
                 return game.profit
             })
             if (diceGameTotalStake.length > 0) {
@@ -758,7 +758,7 @@ const dailyGamesWon = async (today, tomorrow, type) => {
             }, has_won: true
         })
         if (minesGame.length > 0) {
-            minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+            minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'WGF').map(game => {
                 return game.profit
             })
             if (minesGameTotalStake.length > 0) {
@@ -882,7 +882,7 @@ const wonByDate = async (from, to, user_id) => {
         }, user_id: user_id, has_won: true
     })
     if (crashGame.length > 0) {
-        crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+        crashGameTotalStake = crashGame.filter(game => game.token !== 'WGF').map(game => {
             return game.profit
         })
         if (crashGameTotalStake.length > 0) {
@@ -898,7 +898,7 @@ const wonByDate = async (from, to, user_id) => {
         }, user_id: user_id, has_won: true
     })
     if (diceGame.length > 0) {
-        diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+        diceGameTotalStake = diceGame.filter(game => game.token !== 'WGF').map(game => {
             return game.profit
         })
         if (diceGameTotalStake.length > 0) {
@@ -914,7 +914,7 @@ const wonByDate = async (from, to, user_id) => {
         }, user_id: user_id, has_won: true
     })
     if (minesGame.length > 0) {
-        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'WGF').map(game => {
             return game.profit
         })
         if (minesGameTotalStake.length > 0) {

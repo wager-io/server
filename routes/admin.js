@@ -16,6 +16,7 @@ const {
     createFlashDrop,
     dailyReportByDate
 } = require('../controller/adminController')
+const { handleBills } = require("../controller/adminTransaction")
 const { login, register, currentUser, findAdminById, findAdminByUsername, updateAdmin, updatePin, updatePassword, suspend, role, updateAvailability,removeAdmin, getAllAdmin, createChatSettings, updateChatSettings, getChatSettings, confirmPin } = require('../controller/adminAuthController')
 const { protect } = require('../middleware/auth')
 
@@ -58,6 +59,10 @@ router.get('/report', protect, dailyReport)
 router.get('/dayreport',protect,  dailyReportByDate)
 router.get('/gamereport', protect, gameReport)
 router.get('/ggrreport', protect, ggrReport)
+
+
+// Transaction
+router.post('/transaction/bill', handleBills)
 
 
 

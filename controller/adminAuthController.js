@@ -9,7 +9,7 @@ var SECRET = `highscoretechBringwexsingthebestamoung23498hx93`
 
 const createToken = ((_id)=>{
     return  jwt.sign({_id}, SECRET, { expiresIn: '4d' })
- })
+})
 
 const createActivityLog = async (admin_id, action, req) => {
     try {
@@ -47,7 +47,6 @@ const sendTokenResponse = (user, statusCode, res) => {
     });
 };
 
-
 // REGISTER
 const register = async (req, res, next) => {
     const { access } = req.user
@@ -60,6 +59,7 @@ const register = async (req, res, next) => {
             });
         }
 
+    
         if (!username || !password || !pin || !accesses) {
             return res.status(400).json({
                 success: false,
@@ -76,7 +76,6 @@ const register = async (req, res, next) => {
         }
 
         // else create a new user
-
         const user = await Admin.create({
             user_id: await userIdGeneratorService(),
             username,
@@ -98,6 +97,7 @@ const register = async (req, res, next) => {
         return res.status(500).json({ message: err.message });
     }
 };
+
 // LOGIN
 const login = async (req, res, next) => {
     try {
@@ -137,6 +137,7 @@ const login = async (req, res, next) => {
         return res.status(500).json({ message: err.message });
     }
 };
+
 // CONFIRM PIN
 const confirmPin = async (req, res, next) => {
     try {
@@ -179,6 +180,7 @@ const currentUser = async (req, res) => {
         return res.status(500).json({ message: err.message });
     }
 };
+
 //FIND BY ID
 const findAdminById = async (req, res, next) => {
     try {

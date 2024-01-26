@@ -10,7 +10,7 @@ const protect = async (req, res, next) => {
     const token = authorization.split(" ")[1];
     try {
       const decodeToken = jwt.verify(token, SECRET);
-      let pop = await Admin.find({user_id:decodeToken._id}).select("access");
+      let pop = await Admin.find({user_id:decodeToken._id})
       req.user = pop[0]
       next();
     } catch (error) {

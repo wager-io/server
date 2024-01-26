@@ -208,6 +208,19 @@ const previousChats = async (req, res) => {
   }
 };
 
+const handleSunspend = (async(req, res)=>{
+  try {
+    const { user_id, is_suspend } = req.body
+    await Profile.updateOne({user_id},{
+      is_suspend
+    })
+    const profile = await Profile.find({user_id})
+    res.status(200).json(profile);
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+})
+
 const mentionUsers = (async (req, res, next) => {
   try {
     const usernames = await Profile.find()
@@ -233,6 +246,7 @@ module.exports = {
   previousChats,
   SingleUserByID,
   twoFacAuth,
+  handleSunspend,
   mentionUsers,
   twoFacAuthVerify,
 };
