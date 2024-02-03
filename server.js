@@ -89,7 +89,6 @@ app.get("/", (req, res)=>{
 mongoose.set('strictQuery', false);
 // connect database
 // const dbUri = `mongodb://localhost:27017/wager`
-
 const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mongodb.net/wager?retryWrites=true&w=majority`
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))

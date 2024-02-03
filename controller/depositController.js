@@ -3,8 +3,8 @@ const crypto = require("crypto");
 const DepositRequest = require("../model/deposit_request")
 const BTCwallet = require("../model/btc-wallet")
 const ETHwallet = require("../model/ETH-wallet")
-const CCPAYMENT_API_ID = "202311171454381725527873837211648";
-const CC_APP_SECRET = "75b33dba9ee7a51b3c4188baa9124cbe";
+const CCPAYMENT_API_ID = "RtJX7JPjUJGZOXvI";
+const CC_APP_SECRET = "09d111e0f21efe3d7cd916f8dc752789";
 const CCPAYMENT_API_URL = "https://admin.ccpayment.com";
 const { handleProfileTransactions } = require("../profile_mangement/index")
 const { handlePPDunLockUpdate } = require("../profile_mangement/ppd_unlock")
@@ -170,7 +170,6 @@ const initiateDeposit = async (req, res) => {
     }
 
  let deposiit_amount 
-
   let details = data.details
   if(details.coin_name === "BTC"){
     tokenid = 'f36ad1cf-222a-4933-9ad0-86df8069f916'
