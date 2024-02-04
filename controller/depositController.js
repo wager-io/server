@@ -34,7 +34,7 @@ async function getExchangeRateETH() {
         vs_currencies: 'usd',
       },
     });
-    return response.data.bitcoin.usd;
+    return response.data.ethereum.usd;
   } catch (error) {
     console.error('Error fetching exchange rate:', error.message);
     return null;
@@ -162,7 +162,7 @@ const initiateDeposit = async (req, res) => {
       const exchangeRate = await getExchangeRateETH();
       if (exchangeRate !== null) {
         // console.log(`${btcAmount} BTC is equal to ${btcAmount * exchangeRate} USD.`);
-        return  btcAmount * exchangeRate;
+        return  ethAmount * exchangeRate;
       } else {
         console.log('Unable to fetch the exchange rate. Please try again later.');
       }
@@ -203,13 +203,12 @@ const initiateDeposit = async (req, res) => {
   await axios.post(`${CCPAYMENT_API_URL}/ccpayment/v1/bill/create`, paymentData,
       {  headers: headers } 
     ).then((response)=>{
-      console.log(response.data)
-      // RequestTransaction({...response.data, user_id, merchant_order_id:merchant_order_id.toString()})
-      // res.status(200).json({status: true,message: response.data.msg, ...response.data, status: "pending"});
+      RequestTransaction({...response.data, user_id, merchant_order_id:merchant_order_id.toString()})
+      res.status(200).json({status: true,message: response.data.msg, ...response.data, status: "pending"});
     })
     .catch((error)=>{
       console.error("Error processing deposit:", error);
-      // res.status(404).json({ status: false, message: "Internal server error" });
+      res.status(404).json({ status: false, message: "Internal server error" });
     })
   }
    catch (error) {
@@ -218,21 +217,13 @@ const initiateDeposit = async (req, res) => {
   }
 };
 
-const confirmDeposit = async () => {
+const confirmDeposit = async (req, res) => {
   try {
-    let usersID = []
-    let deoop = await DepositRequest.find()
-    if(deoop > 0){
-      deoop.forEach(element => {
-        if(element.status === "Pending"){
-          usersID.push(element.merchant_order_id)
-      }
-      });
-    }
-  if(usersID.length > 0){
-    setTimeout(async()=>{
+    let { user_id} = req.id
+    let usersID = await DepositRequest.find({user_id,status:"Pending"})
+      if(usersID.length > 0){
       const timestamp = Math.floor(Date.now() / 1000);
-      let str =  CCPAYMENT_API_ID + CC_APP_SECRET + timestamp +  JSON.stringify({"merchant_order_ids": usersID});
+      let str =  CCPAYMENT_API_ID + CC_APP_SECRET + timestamp +  JSON.stringify({"merchant_order_ids": (usersID[0].merchant_order_id).split(" ")});
       let sign = crypto.createHash("sha256").update(str, "utf8").digest("hex");
       const headers = {
         Appid: CCPAYMENT_API_ID,
@@ -242,11 +233,8 @@ const confirmDeposit = async () => {
       };
       const response = await axios.post(
       `${CCPAYMENT_API_URL}/ccpayment/v1/bill/info`,{
-        merchant_order_ids: usersID
-      },
-        {
-          headers: headers,
-        }
+        merchant_order_ids: (usersID[0].merchant_order_id).split(" ")
+      },{ headers: headers }
       );
       let result = response.data.data
       if(usersID.length > 0){
@@ -259,13 +247,12 @@ const confirmDeposit = async () => {
           }
         });
       }
-    },3000)
-  }
+      res.status(200).json(result)
+    }
   } catch (error) {
     console.error("Error confirming deposit:", error);
   }
 }
-
 
 const fetchPendingOrder = (async(req, res)=>{
     const {user_id} = req.id
@@ -277,6 +264,5 @@ const fetchPendingOrder = (async(req, res)=>{
       res.status(500).json(error)
     }
 })
-
 
 module.exports = { initiateDeposit, fetchPendingOrder , confirmDeposit}
