@@ -10,7 +10,6 @@ const { handleProfileTransactions } = require("../profile_mangement/index")
 const { handlePPDunLockUpdate } = require("../profile_mangement/ppd_unlock")
 const { handleTotalNewDepsitCount } = require("../profile_mangement/cashbacks")
 
-
 // Function to get the current BTC to USD exchange rate
 async function getExchangeRate() {
   try {
@@ -158,16 +157,16 @@ const initiateDeposit = async (req, res) => {
       }
   }
 
-      // Function to convert BTC to USD using the current exchange rate
-    const convertETHtoUSD = async(ethAmount)=> {
-        const exchangeRate = await getExchangeRateETH();
-        if (exchangeRate !== null) {
-          // console.log(`${btcAmount} BTC is equal to ${btcAmount * exchangeRate} USD.`);
-         return  btcAmount * exchangeRate;
-        } else {
-          console.log('Unable to fetch the exchange rate. Please try again later.');
-        }
-    }
+  // Function to convert BTC to USD using the current exchange rate
+  const convertETHtoUSD = async(ethAmount)=> {
+      const exchangeRate = await getExchangeRateETH();
+      if (exchangeRate !== null) {
+        // console.log(`${btcAmount} BTC is equal to ${btcAmount * exchangeRate} USD.`);
+        return  btcAmount * exchangeRate;
+      } else {
+        console.log('Unable to fetch the exchange rate. Please try again later.');
+      }
+  }
 
  let deposiit_amount 
   let details = data.details
@@ -204,12 +203,13 @@ const initiateDeposit = async (req, res) => {
   await axios.post(`${CCPAYMENT_API_URL}/ccpayment/v1/bill/create`, paymentData,
       {  headers: headers } 
     ).then((response)=>{
-      RequestTransaction({...response.data, user_id, merchant_order_id:merchant_order_id.toString()})
-      res.status(200).json({status: true,message: response.data.msg, ...response.data, status: "pending"});
+      console.log(response.data)
+      // RequestTransaction({...response.data, user_id, merchant_order_id:merchant_order_id.toString()})
+      // res.status(200).json({status: true,message: response.data.msg, ...response.data, status: "pending"});
     })
     .catch((error)=>{
       console.error("Error processing deposit:", error);
-      res.status(404).json({ status: false, message: "Internal server error" });
+      // res.status(404).json({ status: false, message: "Internal server error" });
     })
   }
    catch (error) {
