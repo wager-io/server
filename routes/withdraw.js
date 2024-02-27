@@ -6,6 +6,5 @@ const requireAuth = require("../middleware/requireAuth");
 router.use(requireAuth);
 const { initiateWithdrawal } = require("../controller/withdrawController");
 
-
 router.post("/initiate", initiateWithdrawal);
 module.exports = router;

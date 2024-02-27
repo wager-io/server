@@ -169,15 +169,16 @@ const initiateDeposit = async (req, res) => {
   }
 
  let deposiit_amount 
-  let details = data.details
+  let details = data.active_coin
   if(details.coin_name === "BTC"){
     tokenid = 'f36ad1cf-222a-4933-9ad0-86df8069f916'
-    let ions =  await convertBTCtoUSD(data.amount)
+    let ions =  await convertBTCtoUSD(data.deposit_amount)
     deposiit_amount = (parseFloat(ions)).toFixed(2)
   }
   if(details.coin_name === "ETH"){
+    let active_network = data.active_network
     tokenid = '8addd19b-37df-4faf-bd74-e61e214b008a'
-    let ions =  await convertETHtoUSD(data.amount)
+    let ions =  await convertETHtoUSD(data.deposit_amount)
     deposiit_amount = (parseFloat(ions)).toFixed(2)
   }
 
@@ -191,7 +192,7 @@ const initiateDeposit = async (req, res) => {
       denominated_currency: currency,
       order_valid_period: 43200,
     };
-
+    
     let str = CCPAYMENT_API_ID + CC_APP_SECRET +  timestamp + JSON.stringify(paymentData);
     let sign = crypto.createHash("sha256").update(str, "utf8").digest("hex");
     const headers = {
@@ -205,7 +206,7 @@ const initiateDeposit = async (req, res) => {
     ).then((response)=>{
       RequestTransaction({...response.data, user_id, merchant_order_id:merchant_order_id.toString()})
       res.status(200).json({status: true,message: response.data.msg, ...response.data, status: "pending"});
-    })
+    }) 
     .catch((error)=>{
       console.error("Error processing deposit:", error);
       res.status(404).json({ status: false, message: "Internal server error" });
@@ -216,6 +217,7 @@ const initiateDeposit = async (req, res) => {
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
+
 
 const confirmDeposit = async (req, res) => {
   try {
@@ -265,4 +267,34 @@ const fetchPendingOrder = (async(req, res)=>{
     }
 })
 
-module.exports = { initiateDeposit, fetchPendingOrder , confirmDeposit}
+const updateExpied = (async(req, res)=>{
+  const {user_id} = req.id
+  try{
+    const jdiok = await DepositRequest.updateOne({user_id, status: "Pending"},{
+      status: "Expired"
+    })
+    res.status(200).json(jdiok)
+  }
+  catch(error){
+    res.status(500).json(error)
+  }
+})
+
+const BTCaAddress = (async(req, res)=>{
+  const { user_id } = req.id
+  let paymentData = {
+    user_id, 
+    chain: "ETH",
+  }
+  const timestamp = Math.floor(Date.now() / 1000);
+  let str = CCPAYMENT_API_ID + CC_APP_SECRET +  timestamp + JSON.stringify(paymentData);
+  let sign = crypto.createHash("sha256").update(str, "utf8").digest("hex");
+  const headers = {
+    Appid: CCPAYMENT_API_ID,
+    "Content-Type": "application/json; charset=utf-8",
+    Timestamp: timestamp,
+    Sign: sign,
+  };
+})
+
+module.exports = { initiateDeposit, fetchPendingOrder , confirmDeposit, BTCaAddress, updateExpied}

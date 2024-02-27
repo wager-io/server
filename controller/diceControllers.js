@@ -1,14 +1,12 @@
 const crypto = require('crypto');
 // const { handleWagerIncrease, handleProfileTransactions } = require("../profile_mangement/index")
-const DiceEncription = require("../model/dice_encryped_seeds")
-const DiceGame = require("../model/dice_game")
+const DiceEncription = require("../model/dice_encryped_seeds");
+const DiceGame = require("../model/dice_game");
 const { format } = require('date-fns');
 const currentTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
-
 const BTCWallet = require("../model/btc-wallet");
 const ETHWallet = require("../model/ETH-wallet");
-const WGFWallet = require("../model/WGF-wallet")
-
+const WGFWallet = require("../model/WGF-wallet");
 const Bills = require("../model/bill");
 let nonce = 0
 let maxRange = 100
@@ -32,15 +30,12 @@ const handleHashGeneration = (() => {
   return encrypt
 })
 
-
-const handleUpdatewallet = async (data) => {
+async function handleUpdatewallet(data) {
   try {
     await DiceEncription.updateOne(
-      { user_id: data.user_id },
-      {
-        nonce: parseFloat(data.nonce) + 1,
-      }
-    );
+      { user_id: data.user_id }, {
+      nonce: parseFloat(data.nonce) + 1
+    });
     if (data.token === "WGF") {
       let sjj = await WGFWallet.find({ user_id: data.user_id });
       let prev_bal = parseFloat(sjj[0].balance);
@@ -59,7 +54,7 @@ const handleUpdatewallet = async (data) => {
           { balance: prev_bal - bet_amount }
         );
       }
-    } 
+    }
     else if (data.token === "BTC") {
       let sjj = await BTCWallet.find({ user_id: data.user_id });
       let prev_bal = parseFloat(sjj[0].balance);
@@ -79,7 +74,6 @@ const handleUpdatewallet = async (data) => {
         );
       }
     }
-
     else if (data.token === "ETH") {
       let sjj = await ETHWallet.find({ user_id: data.user_id });
       let prev_bal = parseFloat(sjj[0].balance);
@@ -99,21 +93,21 @@ const handleUpdatewallet = async (data) => {
         );
       }
     }
-  } 
+  }
   catch (error) {
     console.log(error);
   }
-};
+}
 
 
-const handleDiceBEt = async (data) => {
+async function handleDiceBEt(data) {
   let events = data[0];
   try {
     // if (events.token !== "WGF") {
     //   handleWagerIncrease(events);
     // }
     let result = await DiceGame.create(events);
-  } 
+  }
   catch (error) {
     console.log(error);
   }
@@ -129,9 +123,9 @@ const handleDiceBEt = async (data) => {
     bill_id: events.bet_id,
   };
   await Bills.create(bil);
-};
+}
 
-const handleMybet = (e, user, prev_bal, res) => {
+function handleMybet(e, user, prev_bal, res) {
   if (user.is_roll_under) {
     if (parseFloat(e.cashout) < parseFloat(user.chance)) {
       let wining_amount = parseFloat(user.wining_amount);
@@ -148,7 +142,7 @@ const handleMybet = (e, user, prev_bal, res) => {
         },
       ];
       handleDiceBEt(data);
-    return  res.status(200).json(data)
+      return res.status(200).json(data);
     } else {
       let bet_amount = parseFloat(user.bet_amount);
       let current_amount = parseFloat(prev_bal - bet_amount).toFixed(4);
@@ -164,9 +158,9 @@ const handleMybet = (e, user, prev_bal, res) => {
         },
       ];
       handleDiceBEt(data);
-      return  res.status(200).json(data)
+      return res.status(200).json(data);
     }
-  } 
+  }
   else {
     if (parseFloat(e.cashout) > parseFloat(user.chance)) {
       let wining_amount = parseFloat(user.wining_amount);
@@ -183,7 +177,7 @@ const handleMybet = (e, user, prev_bal, res) => {
         }
       ];
       handleDiceBEt(data);
-      return  res.status(200).json(data)
+      return res.status(200).json(data);
     } else {
       let bet_amount = parseFloat(user.bet_amount);
       let current_amount = parseFloat(prev_bal - bet_amount).toFixed(4);
@@ -199,10 +193,10 @@ const handleMybet = (e, user, prev_bal, res) => {
         },
       ];
       handleDiceBEt(data);
-      return res.status(200).json(data)
+      return res.status(200).json(data);
     }
   }
-};
+}
 
 const HandlePlayDice = (async(req, res) => {
   const { user_id } = req.id

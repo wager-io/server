@@ -1,8 +1,6 @@
 const { Server } = require("socket.io");
-
 const WGFWallet = require("../model/WGF-wallet");
 const Chats = require("../model/public-chat");
-
 const {
   handleHiloBet,
   handleHiloNextRound,
@@ -66,7 +64,6 @@ const handleCoinDrop = async (data) => {
   if (dropper.vip_level < 7) {
     return;
   }
-
   return deductFromWalletBalance(wallet, amount, user_id);
 };
 
@@ -79,11 +76,6 @@ const handleRain = async (data, activeUsers) => {
     coin_rain_amount,
     user_id
   );
-  console.log({
-    isDeducted,
-    activeUsers: activeUsers.length,
-    coin_rain_participant,
-  });
   if (isDeducted === "done") {
     const share = coin_rain_amount / coin_rain_num;
     for (let i = 0; i < activeUsers.length; i++) {
@@ -140,7 +132,6 @@ async function createsocket(httpServer) {
     }
     io.emit("dice-gamePLayers", activeplayers);
   };
-
 
   let active_crash = [];
   const handleCrashActiveBet = (event) => {

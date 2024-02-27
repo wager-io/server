@@ -29,7 +29,7 @@ const handleDefaultWallet = (()=>{
         balance: 0,
         coin_image:"https://res.cloudinary.com/dxwhz3r81/image/upload/v1698011384/type_1_w_hqvuex.png", 
         coin_name: "WFD"
-       },
+       }
    ]
    return wallet
 })

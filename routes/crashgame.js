@@ -7,6 +7,7 @@ router.post('/scripts/list', handleScriptList)
 router.get('/history', handleCrashHistory)
 router.get('/details/:betID', handleBetDetails)
 router.get('/players/:gameID', handleCrashGamePlayers)
+
 // auth middleware
 router.use(requireAuth);
 router.post('/my-bet', handleMybets);
