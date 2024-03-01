@@ -15,56 +15,71 @@ const GlobalStat = (async(req, res)=>{
             global_statistics.push(element)
         })
 
-        let PPF = []
-        let PPF_lose = []
-        let PPF_win = []
-        let PPF_img = ''
-        let PPF_wagered = 0
+        let WGF = []
+        let WGF_lose = []
+        let WGF_win = []
+        let WGF_img = ''
+        let WGF_wagered = 0
 
-        let USDT = []
-        let USDT_lose = []
-        let USDT_win = []
-        let USDT_img = ''
-        let USDT_wagered = 0
+        let ETH = []
+        let ETH_lose = []
+        let ETH_win = []
+        let ETH_img = ''
+        let ETH_wagered = 0
+
+        let BTC = []
+        let BTC_lose = []
+        let BTC_win = []
+        let BTC_img = ''
+        let BTC_wagered = 0
 
 
-    global_statistics.forEach(element => {
-        if(element.token === "USDT"){
-            USDT.push(element)
-            USDT_img = element.token_img
-            USDT_wagered += (parseInt(element.bet_amount))
-            if(element.has_won){
-                USDT_win.push(element)
-            }else{
-                USDT_lose.push(element) 
-            }
+global_statistics.forEach(element => {
+    if(element.token === "ETH"){
+        ETH.push(element)
+        ETH_img = element.token_img
+        ETH_wagered += (parseInt(element.bet_amount))
+        if(element.has_won){
+            ETH_win.push(element)
+        }else{
+            ETH_lose.push(element) 
         }
-        else if(element.token === "PPF"){
-            PPF.push(element)
-            PPF_img = element.token_img
-            PPF_wagered += (parseInt(element.bet_amount))
-            if(element.has_won){
-              PPF_win.push(element)
-            }else{
-                PPF_lose.push(element) 
-            }
+    }
+    if(element.token === "BTC"){
+        BTC.push(element)
+        BTC_img = element.token_img
+        BTC_wagered += (parseInt(element.bet_amount))
+        if(element.has_won){
+            BTC_win.push(element)
+        }else{
+            BTC_lose.push(element) 
         }
+    }
+    else if(element.token === "WGF"){
+        WGF.push(element)
+        WGF_img = element.token_img
+        WGF_wagered += (parseInt(element.bet_amount))
+        if(element.has_won){
+            WGF_win.push(element)
+        }else{
+            WGF_lose.push(element) 
+        }
+    }
 })
+    let total_wagered = ETH_wagered + BTC_wagered
+    let total_lose = WGF_lose.length + ETH_lose.length + BTC_lose.length 
+    let total_win = WGF_win.length + ETH_win.length + BTC_win.length
+    let total_bet = global_statistics.length
+    let wgf = {wgf_bets:WGF.length, wgf_win: WGF_win.length, wgf_lose: WGF_lose.length, wgf_wagered:WGF_wagered, wgf_img:WGF_img }
+    let eth = {eth_bets:ETH.length, eth_win: ETH_win.length, eth_lose: ETH_lose.length, eth_wagered:ETH_wagered, eth_img:ETH_img }
+    let btc = {btc_bets:BTC.length, btc_win: BTC_win.length, btc_lose: BTC_lose.length, btc_wagered:BTC_wagered, btc_img:BTC_img }
 
-        let total_wagered = USDT_wagered 
-        let total_lose = PPF_lose.length + USDT_lose.length 
-        let total_win = PPF_win.length + USDT_win.length 
-        let total_bet = global_statistics.length
-        let ppf = {ppf_bets:PPF.length, ppf_win: PPF_win.length, ppf_lose: PPF_lose.length, ppf_wagered:PPF_wagered, ppf_img:PPF_img }
-        let usdt = {usdt_bets:USDT.length, usdt_win: USDT_win.length, usdt_lose: USDT_lose.length, usdt_wagered:USDT_wagered, usdt_img:USDT_img }
-
-        res.status(200).json({total_wagered, total_bet,total_lose,total_win, ppf, usdt})
+     res.status(200).json({total_wagered, total_bet,total_lose,total_win, wgf, eth, btc})
     }
     catch(error){
         res.status(500).json({error})
     }
 })
-
 
 const crashStat = (async(req, res)=>{
     const {user_id} = req.body
