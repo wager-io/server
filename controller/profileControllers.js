@@ -29,8 +29,9 @@ const UpdateProfile = (async(req, res)=>{
       born: data.born,
        firstname: data.firstname,
         lastname:data.lastname
-     });
-     res.status(200).json({message: "Updated succesfully"})
+     })
+     let profile = await Profile.findOne({user_id})
+     res.status(200).json(profile)
     }
     catch(error){
       res.status(501).json({ message: error });
@@ -58,23 +59,24 @@ const UpdateAvatar = (async(req, res)=>{
 })
 
 const UpdateUser = (async(req, res)=>{
-    const {user_id} = req.id;
-    const {data} = req.body
-    if (!user_id) {
-      res.status(500).json({ error: "No user found" });
+  const {user_id} = req.id;
+  const {data} = req.body
+  if (!user_id) {
+    res.status(500).json({ error: "No user found" });
+  }
+  else{
+    try{
+     await Profile.updateOne({ user_id }, {
+      username: data.username,
+      profile_image: data.profile_image,
+     })
+    let profile = await Profile.findOne({user_id})
+     res.status(200).json(profile)
     }
-    else{
-      try{
-       await Profile.updateOne({ user_id }, {
-        username: data.username,
-        profile_image: data.profile_image,
-       });
-       res.status(200).json({message: "Updated succesfully"})
-      }
-      catch(error){        
-        res.status(404).json({ message: error });
-      }
+    catch(error){        
+      res.status(404).json({ message: error });
     }
+  }
 })
 
 const SingleUser = (async(req, res)=>{

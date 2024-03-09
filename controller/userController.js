@@ -20,9 +20,16 @@ const { InitializeMinesGame } = require("../controller/minesControllers");
 const { twoFactorAuth } = require("../utils/twoFactorAuth");
 const { twoFactorAuthVerify } = require("../utils/twoFactorAuthVerify");
 const { createNotify } = require("./notify");
+
+const BTCWallet = require("../model/btc-wallet")
+const EThHWallet = require("../model/ETH-wallet")
+const WGFWallet = require("../model/WGF-wallet")
+const WGDWallet = require("../model/WGD-wallet")
+
 const createToken = (_id) => {
   return jwt.sign({ _id }, SECRET, { expiresIn: "9d" });
 };
+
 
 const Register = async (req, res) => {
   const {data} = req.body;
@@ -101,7 +108,11 @@ const Register = async (req, res) => {
     }
   } else {
     const result = await Profile.find({ user_id });
-    let wallet = handleDefaultWallet();
+    const btc = await BTCWallet.findOne({ user_id })
+    const eth = await EThHWallet.findOne({ user_id })
+    const wgf = await WGFWallet.findOne({ user_id })
+    const wgd = await WGDWallet.findOne({ user_id })
+    const wallet = [btc, eth, wgf, wgd]
     const Token = createToken(user_id);
     res.status(200).json({ Token,wallet, result: result[0] });
   }
@@ -163,7 +174,7 @@ const twoFacAuthVerify = async (req, res) => {
 const handleCheckUsername = (async(req, res)=>{
     try{
       const { username } = req.body
-      const user = await Profile.find({ username });
+      const user = await Profile.findOne({ username });
        res.status(200).json(user)
     }
     catch(error){

@@ -4,9 +4,8 @@ const requireAuth = require('../middleware/requireAuth')
 
 // auth middleware
 router.use(requireAuth);
-const {  handleSwap , handleBills}  = require('../controller/transactionControllers')
-router.post('/swap', handleSwap)
-router.get('/bill', handleBills)
+const {  handleTransaction }  = require('../controller/transactionControllers');
+
+router.get('/:id', handleTransaction)
 
 module.exports = router
-

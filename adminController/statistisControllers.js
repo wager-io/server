@@ -2,18 +2,22 @@ const CrashGame = require("../model/crashgame")
 const DiceGame = require("../model/dice_game")
 
 const GlobalStat = (async(req, res)=>{
-    const {user_id} = req.body
+    const {user_id, game} = req.body
     let global_statistics = []
     try{
-        let response = await CrashGame.find({user_id})
-        response.forEach(element => {
+    let crash_res =  game === "global" || game === "crash" ?  await CrashGame.find({user_id}) : []
+    let dice_res =  game === "global" || game === "dice" ? await DiceGame.find({user_id}) : []
+        
+    if(crash_res.length !== 0){
+        crash_res.forEach(element => {
             global_statistics.push(element)
-        })
-    
-        let dice_res = await DiceGame.find({user_id})
+        });
+    }
+    if(dice_res.length !== 0){
         dice_res.forEach(element => {
             global_statistics.push(element)
-        })
+        });
+    }
 
         let WGF = []
         let WGF_lose = []
